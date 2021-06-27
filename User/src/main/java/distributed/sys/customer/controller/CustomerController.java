@@ -4,10 +4,9 @@ package distributed.sys.customer.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import distributed.sys.customer.dao.CustomerRepository;
+import distributed.sys.customer.dao.DriverRepository;
 import distributed.sys.customer.dao.RequestOrderRepository;
-import distributed.sys.customer.entity.Customer;
-import distributed.sys.customer.entity.RequestOrder;
-import distributed.sys.customer.entity.Views;
+import distributed.sys.customer.entity.*;
 import distributed.sys.customer.service.CustomerService.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,8 +18,15 @@ import java.util.List;
 
 //@Tag(name = "乘车用户接口")
 @RestController
-@RequestMapping("/customer/customer")
+@RequestMapping("/user/customer")
 public class CustomerController {
+    public DriverRepository driverRepository;
+
+    @Autowired
+    public void setDriverRepository(DriverRepository driverRepository) {
+        this.driverRepository = driverRepository;
+    }
+
     public static RequestOrderRepository requestOrderRepository;
 
     @Autowired
@@ -83,6 +89,10 @@ public class CustomerController {
         if (CustomerService.CustomerHailing(username, requestOrder)) {
             List<RequestOrder> requestOrders = (List<RequestOrder>) requestOrderRepository.findAll();
             int x = requestOrders.size();
+            // 消息推送需实现
+
+
+
             return "您前面还有" + x + "位用户等待,请耐心等候";
 //            return CustomerService.findDrivers(username,requestOrder);
         } else {
@@ -103,6 +113,7 @@ public class CustomerController {
     // 有司机接单
     @GetMapping("/takeOrder")
     public String takeOrder(String username, RequestOrder requestOrder) {
+
         //消息推送 需要实现
         return "预测还有 " + " 公里 约 " + " 分钟到达";
     }
@@ -114,6 +125,20 @@ public class CustomerController {
         return "祝您生活愉快";
     }
 
-
+    @GetMapping("/search")
+    public String searchDriver(String driverName)
+    {
+        Driver driver = driverRepository.findByDriverName(driverName);
+        String retStr = "Driver:" + driver.getDriverName() + "\n";
+        retStr += "Service Level:" + driver.getServiceLevel() + "\n";
+        retStr += "Driver Level:" + driver.getDriverLevel() + "\n";
+        retStr += "Comments:\n";
+        List<Comment> commentList = driver.getCommentList();
+        for(int i = 0; i < commentList.size();++i)
+        {
+            retStr += (i +1)+":"+"Stars:"+commentList.get(i).getCommentLevel() + " Content:" +commentList.get(i).getContent() + "\n";
+        }
+        return retStr;
+    }
 
 }

@@ -21,10 +21,14 @@ public class RequestOrder {
 
     private String customerName;
     private String startTime;
-    private double curX;
-    private double curY;
-    private double desX;
-    private double desY;
+    private int curX;
+    private int curY;
+    private int desX;
+    private int desY;
+//    private double curX;
+//    private double curY;
+//    private double desX;
+//    private double desY;
     private int serviceLevel;
     private int minDriverLevel;
 

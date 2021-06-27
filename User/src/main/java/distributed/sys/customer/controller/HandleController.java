@@ -38,7 +38,7 @@ public class HandleController {
     @RequestMapping("/handleRequestOrder")
     public String handleRequest()
     {
-        //定时处理未完成的订单
+        //处理未完成订单
 
         List<RequestOrder> requestOrderList = (List<RequestOrder>) requestOrderRepository.findAll();
         if(requestOrderList != null)
@@ -52,6 +52,7 @@ public class HandleController {
         }
         return "Handle over";
     }
+
 
 
 

@@ -13,10 +13,10 @@ public class Order {
     private long id;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    private  Customer customer;
+    private Customer customer;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    private  Driver driver;
+    private Driver driver;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "Comment")
@@ -27,13 +27,17 @@ public class Order {
     private String startTime;
     private String endTime;
     private int serviceLevel;
-    private double curX;
-    private double curY;
-    private double desX;
-    private double desY;
+    private int curX;
+    private int curY;
+    private int desX;
+    private int desY;
+//    private double curX;
+//    private double curY;
+//    private double desX;
+//    private double desY;
     private int useTime;
-    private double distance;
-    private double price;
+    private int distance;
+    private int price;
     private int curState;
 
 

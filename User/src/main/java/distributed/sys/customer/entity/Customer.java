@@ -16,7 +16,7 @@ public class Customer {
 
     @JsonView(Views.Public.class)
     private String CustomerName;
-    @JsonView(Views.Public.class)
+    @JsonView(Views.Internal.class)
     private String email;
     @JsonView(Views.Internal.class)
     private String password;
@@ -34,13 +34,18 @@ public class Customer {
     private int membershipLevel;
 
     @JsonView(Views.Internal.class)
-    private double curX;
+    private int curX;
     @JsonView(Views.Internal.class)
-    private double curY;
-    @JsonView(Views.Internal.class)
-    private double desX;
-    @JsonView(Views.Internal.class)
-    private double desY;
+    private int curY;
+
+//    @JsonView(Views.Internal.class)
+//    private double curX;
+//    @JsonView(Views.Internal.class)
+//    private double curY;
+//    @JsonView(Views.Internal.class)
+//    private double desX;
+//    @JsonView(Views.Internal.class)
+//    private double desY;
 
 
 

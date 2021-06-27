@@ -27,7 +27,7 @@ public class Driver {
 
     @JsonView(Views.Public.class)
     private String driverName;
-    @JsonView(Views.Public.class)
+    @JsonView(Views.Internal.class)
     private String email;
     @JsonView(Views.Public.class)
     private String password;
@@ -40,7 +40,7 @@ public class Driver {
 
 
     @JsonView(Views.Public.class)
-    private int serviceLevel;
+    private double serviceLevel;
     @JsonView(Views.Public.class)
     private int driverPoint;
     @JsonView(Views.Public.class)
@@ -48,13 +48,24 @@ public class Driver {
     @JsonView(Views.Public.class)
     private int driverLevel;
     //    private String driverLevel;
-    @JsonView(Views.Internal.class)
-    private double curX;
-    @JsonView(Views.Internal.class)
-    private double curY;
-    @JsonView(Views.Internal.class)
-    private double desX;
-    @JsonView(Views.Internal.class)
-    private double desY;
 
+    @JsonView(Views.Internal.class)
+    private int ifBusy;
+    @JsonView(Views.Internal.class)
+    private int curX;
+    @JsonView(Views.Internal.class)
+    private int curY;
+    @JsonView(Views.Internal.class)
+    private int desX;
+    @JsonView(Views.Internal.class)
+    private int desY;
+
+//    @JsonView(Views.Internal.class)
+//    private double curX;
+//    @JsonView(Views.Internal.class)
+//    private double curY;
+//    @JsonView(Views.Internal.class)
+//    private double desX;
+//    @JsonView(Views.Internal.class)
+//    private double desY;
 }
