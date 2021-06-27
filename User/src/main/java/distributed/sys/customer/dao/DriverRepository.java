@@ -1,0 +1,16 @@
+package distributed.sys.customer.dao;
+
+import distributed.sys.customer.entity.Driver;
+import org.springframework.data.repository.CrudRepository;
+
+import java.util.List;
+
+public interface DriverRepository extends CrudRepository<Driver,Long>{
+    Driver findByDriverName(String driverName);
+    List<DriverRepository> findByEmail(String email);
+    List<DriverRepository> findByFinishCount(int finishCount);
+    List<DriverRepository> findByFinishDistance(double finishDistance);
+    List<DriverRepository> findByDriverPoint(int driverPoint);
+    List<DriverRepository> findByDriverLevel(int driverLevel);
+
+}
