@@ -14,6 +14,8 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    private int ifLogin;
+
     @JsonView(Views.Public.class)
     private String CustomerName;
     @JsonView(Views.Internal.class)

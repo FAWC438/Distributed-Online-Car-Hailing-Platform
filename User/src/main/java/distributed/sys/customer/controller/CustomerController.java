@@ -51,22 +51,62 @@ public class CustomerController {
     public String login(HttpServletRequest request) {
         String customerName = request.getParameter("customerName");
         String password = request.getParameter("password");
-        if (null == customerName || null == password) {
-            return "redirect:/";
+
+        if(null == customerName || null == password)
+        {
+            return "用户名或密码错误";
         }
-        //不正确的用户名密码
-        if (!customerName.equals("test") || !password.equals("123456")) {
-            //登录失败设置标志位null 因为没有登出
-            request.getSession().setAttribute("loginName", null);
-            return "redirect:/";
+        else
+        {
+            if(customerRepository.findByCustomerName(customerName) != null)
+            {
+                if(customerRepository.findByCustomerName(customerName).getPassword().equals(password))
+                {
+                    System.out.println("用户" + customerName +"已登录");
+                    customerRepository.findByCustomerName(customerName).setIfLogin(1);
+                    return "redirect:/Index";
+                }
+                else
+                {
+                    return "密码错误";
+                }
+            }
+            else
+            {
+                return "用户不存在";
+            }
         }
 
-        request.getSession().setAttribute("loginName", "test");
-        return "redirect:/addrList";
+
+
+//        if (null == customerName || null == password) {
+//            return "redirect:/";
+//        }
+//        //不正确的用户名密码
+//        if (!customerName.equals("test") || !password.equals("123456")) {
+//            //登录失败设置标志位null 因为没有登出
+//            request.getSession().setAttribute("loginName", null);
+//            return "redirect:/";
+//        }
+    }
+
+    @RequestMapping("/logout")
+    public String logout(String customerName)
+    {
+        customerRepository.findByCustomerName(customerName).setIfLogin(0);
+        System.out.println("用户" + customerName + "已登出");
+        return "redirect:/login";
     }
 
     @RequestMapping("/resgister")
     public String register(Customer customer) {
+        customer.setTakeCount(0);
+        customer.setTakeDistance(0);
+        customer.setMembershipLevel(1);
+        customer.setMembershipPoint(0);
+        customer.setCurX(-1);
+        customer.setCurX(-1);
+        customer.setIfLogin(0);
         customerRepository.save(customer);
         return "redirect:/Index";
     }
@@ -77,7 +117,7 @@ public class CustomerController {
 //        Customer customer = customerRepository.findByCustomerName(userName);
 //        String retStr = customer.getCustomerName()
 //    }
-    @GetMapping("/Index")
+    @GetMapping("/Index")//初始页面 暂时返回视图
     @JsonView(Views.Public.class)
     public Customer IndexView(String username) {
         return customerRepository.findByCustomerName(username);

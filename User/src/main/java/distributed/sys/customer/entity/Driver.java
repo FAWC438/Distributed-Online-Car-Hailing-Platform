@@ -23,6 +23,7 @@ public class Driver {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "Comment")
     private List<Comment> commentList;
 
+    private int ifLogin;
 
 
     @JsonView(Views.Public.class)
@@ -40,11 +41,11 @@ public class Driver {
 
 
     @JsonView(Views.Public.class)
-    private double serviceLevel;
+    private int serviceLevel;
     @JsonView(Views.Public.class)
     private int driverPoint;
     @JsonView(Views.Public.class)
-    private double driverDistance;
+    private int driverDistance;
     @JsonView(Views.Public.class)
     private int driverLevel;
     //    private String driverLevel;
