@@ -6,12 +6,14 @@ import distributed.sys.customer.dao.DriverRepository;
 import distributed.sys.customer.dao.OrderRepository;
 import distributed.sys.customer.dao.RequestOrderRepository;
 import distributed.sys.customer.entity.*;
+import distributed.sys.customer.server.WebSocketServer;
 import distributed.sys.customer.service.CustomerService.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -252,7 +254,13 @@ public class DriverController {
         orderRepository.save(order);
         driverRepository.save(driver);
 
-
+        WebSocketServer webSocketServer = new WebSocketServer();
+        String message = "司机：" + driverName +"已前往指定地点，请耐心等候";
+        try {
+            webSocketServer.sendInfo(message, customer.getId());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return "请乘客系好安全带，正在前往目的地";
     }
 
