@@ -59,6 +59,7 @@ public class DriverController {
         driver.setFinishDistance(0);
 //        driver.setServiceLevel(1);
         driver.setDriverLevel(1);
+        driver.setStars(0);
         driver.setIfBusy(0);
         driver.setIfLogin(0);
         driver.setDesX(driver.getCurX());
@@ -111,6 +112,11 @@ public class DriverController {
         }
         driver.setCurX(curX);
         driver.setCurY(curY);
+
+        //更新司机积分信息
+        driver.setDriverPoint(driver.getFinishCount() * 10 + driver.getFinishDistance());
+        driver.setServiceLevel(driver.getDriverPoint() % 50);
+
     }
 
 

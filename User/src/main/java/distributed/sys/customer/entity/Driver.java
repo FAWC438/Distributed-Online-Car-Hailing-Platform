@@ -44,10 +44,13 @@ public class Driver {
     private int serviceLevel;
     @JsonView(Views.Public.class)
     private int driverPoint;
-    @JsonView(Views.Public.class)
-    private int driverDistance;
+//    @JsonView(Views.Public.class)
+//    private int driverDistance;
     @JsonView(Views.Public.class)
     private int driverLevel;
+
+    @JsonView(Views.Public.class)
+    private double stars;
     //    private String driverLevel;
 
     @JsonView(Views.Internal.class)

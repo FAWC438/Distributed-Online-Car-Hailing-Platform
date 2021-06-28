@@ -27,7 +27,7 @@ public class Customer {
     @JsonView(Views.Public.class)
     private int takeCount;
     @JsonView(Views.Public.class)
-    private double takeDistance;
+    private int takeDistance;
 
     @JsonView(Views.Public.class)
     private int membershipPoint;

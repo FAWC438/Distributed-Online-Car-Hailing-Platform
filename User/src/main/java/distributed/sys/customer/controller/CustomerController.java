@@ -123,6 +123,31 @@ public class CustomerController {
         return customerRepository.findByCustomerName(username);
     }
 
+    @RequestMapping("/updateCustomer")
+    public void updateCustomer(String customerName)
+    {
+        Customer customer = customerRepository.findByCustomerName(customerName);
+        //获取当前位置 暂未实现
+
+        //更新用户积分信息
+        customer.setMembershipPoint(customer.getTakeCount()*10 + customer.getTakeDistance());
+        customer.setMembershipLevel(customer.getMembershipPoint() % 50 + 1);
+    }
+
+//    @RequestMapping("/edit")
+//    public String edit(String customerName, String editName)
+//    {
+//        if(customerRepository.findByCustomerName(editName) == null)
+//        {
+//            customerRepository.findByCustomerName(customerName).setCustomerName(editName);
+//            return "redirect:/Index";
+//        }
+//        else
+//        {
+//            //消息通知 用户名已存在？
+//        }
+//    }
+
     @GetMapping("/Hailing")
     public String userHailing(String username, RequestOrder requestOrder) {
 //        boolean flag = CustomerService.CustomerHailing(username,requestOrder);
