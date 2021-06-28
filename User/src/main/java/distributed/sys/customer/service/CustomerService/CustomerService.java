@@ -6,8 +6,6 @@ import distributed.sys.customer.entity.RequestOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class CustomerService {
 
@@ -30,7 +28,7 @@ public class CustomerService {
         if (requestOrderRepository.findByCustomerName(username) == null) {
             System.out.println("Get a request Order from" + username);
 //        System.out.print(username);
-            requestOrderRepository.save(requestOrder);
+//            requestOrderRepository.save(requestOrder);
             return true;
         } else {
             System.out.println(username + "is waiting");
@@ -38,11 +36,11 @@ public class CustomerService {
         }
     }
 
-    public static String findDrivers(String username, RequestOrder requestOrder) {
-        List<RequestOrder> requestOrders = (List<RequestOrder>)requestOrderRepository.findAll();
-        int x = requestOrders.size();
-        return "您前面还有" + x + "位用户等待,请耐心等候";
-
-    }
+//    public static String findDrivers(String username, RequestOrder requestOrder) {
+//        List<RequestOrder> requestOrders = (List<RequestOrder>)requestOrderRepository.findAll();
+//        int x = requestOrders.size();
+//        return "您前面还有" + x + "位用户等待,请耐心等候";
+//
+//    }
 
 }

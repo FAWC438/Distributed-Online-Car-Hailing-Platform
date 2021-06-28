@@ -18,9 +18,11 @@ public class RequestOrder {
     @ManyToOne(cascade = CascadeType.ALL)
     private Driver driver;
 
-
     private String customerName;
     private String startTime;
+    private String driverName;
+    private int priority;
+    private int ifCheck;
     private int curX;
     private int curY;
     private int desX;
@@ -30,6 +32,6 @@ public class RequestOrder {
 //    private double desX;
 //    private double desY;
     private int serviceLevel;
-    private int minDriverLevel;
+//    private int minDriverLevel;
 
 }

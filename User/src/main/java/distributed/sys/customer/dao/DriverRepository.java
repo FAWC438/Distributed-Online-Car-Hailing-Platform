@@ -12,5 +12,5 @@ public interface DriverRepository extends CrudRepository<Driver,Long>{
     List<DriverRepository> findByFinishDistance(double finishDistance);
     List<DriverRepository> findByDriverPoint(int driverPoint);
     List<DriverRepository> findByDriverLevel(int driverLevel);
-
+    Driver findByCurCustomerName(String customerName);
 }

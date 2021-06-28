@@ -18,11 +18,11 @@ public class Order {
     @ManyToOne(cascade = CascadeType.ALL)
     private Driver driver;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "Comment")
-    private Comment comment;
+//    @OneToOne(cascade = CascadeType.ALL)
+//    @JoinColumn(name = "Comment")
+//    private Comment comment;
 
-    private String userName;
+    private String customerName;
     private String driverName;
     private String startTime;
     private String endTime;
@@ -35,10 +35,9 @@ public class Order {
 //    private double curY;
 //    private double desX;
 //    private double desY;
-    private int useTime;
+//    private int useTime;
     private int distance;
     private int price;
-    private int curState;
-
-
+    private int curState;// 0未完成 1已完成
+//    private int curOrderId;
 }

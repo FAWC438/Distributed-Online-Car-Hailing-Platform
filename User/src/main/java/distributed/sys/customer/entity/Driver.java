@@ -24,7 +24,8 @@ public class Driver {
     private List<Comment> commentList;
 
     private int ifLogin;
-
+    private Order curOrder;
+    private String curCustomerName;
 
     @JsonView(Views.Public.class)
     private String driverName;

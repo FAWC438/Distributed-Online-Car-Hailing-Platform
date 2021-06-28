@@ -8,5 +8,4 @@ import java.util.List;
 public interface RequestOrderRepository extends CrudRepository<RequestOrder,Long>{
     List<OrderRepository> findByStartTime(String st);
     RequestOrder findByCustomerName(String customerName);
-
 }
