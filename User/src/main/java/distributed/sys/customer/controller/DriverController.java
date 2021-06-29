@@ -2,10 +2,7 @@ package distributed.sys.customer.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import distributed.sys.customer.entity.*;
-import distributed.sys.customer.repository.CustomerRepository;
-import distributed.sys.customer.repository.DriverRepository;
-import distributed.sys.customer.repository.OrderRepository;
-import distributed.sys.customer.repository.RequestOrderRepository;
+import distributed.sys.customer.repository.*;
 import distributed.sys.customer.server.WebSocketServer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,33 +18,23 @@ import java.util.List;
 @RestController
 @RequestMapping("/user/driver")
 public class DriverController {
-    public OrderRepository orderRepository;
+    final CommentRepository commentRepository;
+    final OrderRepository orderRepository;
+    final DriverRepository driverRepository;
+    final RequestOrderRepository requestOrderRepository;
+    final CustomerRepository customerRepository;
+    final AreaRepository areaRepository;
+
 
     @Autowired
-    public void setOrderRepository(OrderRepository orderRepository) {
+    public DriverController(CommentRepository commentRepository, OrderRepository orderRepository, DriverRepository driverRepository,
+                              RequestOrderRepository requestOrderRepository, CustomerRepository customerRepository, AreaRepository areaRepository) {
+        this.commentRepository = commentRepository;
         this.orderRepository = orderRepository;
-    }
-
-
-    public DriverRepository driverRepository;
-
-    @Autowired
-    public void setDriverRepository(DriverRepository driverRepository) {
         this.driverRepository = driverRepository;
-    }
-
-    public RequestOrderRepository requestOrderRepository;
-
-    @Autowired
-    public void setRequestOrderRepository(RequestOrderRepository requestOrderRepository) {
         this.requestOrderRepository = requestOrderRepository;
-    }
-
-    public CustomerRepository customerRepository;
-
-    @Autowired
-    public void setCustomerRepository(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
+        this.areaRepository = areaRepository;
     }
 
     @RequestMapping("/login")
@@ -103,7 +90,10 @@ public class DriverController {
 //            driver.setRequestOrderList(new ArrayList<>());
             driver.setCurCustomerName("");
             driverRepository.save(driver);
-
+            Area area = new Area();
+            area.setDriverId(driverRepository.findByDriverName(driver.getDriverName()).getId());
+            area.setSectorId((driver.getCurY() % 3) * 17 + driver.getCurX());
+            areaRepository.save(area);
             return "注册成功";
         } else {
             System.out.println("司机用户名已存在");
@@ -248,9 +238,14 @@ public class DriverController {
         driver.setCurOrderId(order.getId());
         driver.setCurCustomerName(customer.getCustomerName());
         //乘客已上车 请求订单生命结束 从数据库中删去
+
+
         requestOrderRepository.delete(requestOrder);
         orderRepository.save(order);
         driverRepository.save(driver);
+
+
+
 
         WebSocketServer webSocketServer = new WebSocketServer();
         String message = "司机：" + driverName + "已前往指定地点，请耐心等候";
@@ -280,6 +275,11 @@ public class DriverController {
         driver.setFinishDistance(driver.getFinishCount() + order.getDistance());
         driver.setDesX(25);
         driver.setDesY(25);
+
+        Area area = areaRepository.findByDriverId(driver.getId());
+//        area.setDriverId(driverRepository.findByDriverName(driver.getDriverName()).getId());
+        area.setSectorId((driver.getDesY() % 3) * 17 + driver.getDesX());
+        areaRepository.save(area);
 
         driverRepository.save(driver);
         orderRepository.save(order);

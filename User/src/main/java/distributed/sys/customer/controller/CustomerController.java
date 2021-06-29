@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 
 //@Tag(name = "乘车用户接口")
@@ -72,15 +73,18 @@ public class CustomerController {
     final DriverRepository driverRepository;
     final RequestOrderRepository requestOrderRepository;
     final CustomerRepository customerRepository;
+    final AreaRepository areaRepository;
+
 
     @Autowired
     public CustomerController(CommentRepository commentRepository, OrderRepository orderRepository, DriverRepository driverRepository,
-                              RequestOrderRepository requestOrderRepository, CustomerRepository customerRepository) {
+                              RequestOrderRepository requestOrderRepository, CustomerRepository customerRepository, AreaRepository areaRepository) {
         this.commentRepository = commentRepository;
         this.orderRepository = orderRepository;
         this.driverRepository = driverRepository;
         this.requestOrderRepository = requestOrderRepository;
         this.customerRepository = customerRepository;
+        this.areaRepository = areaRepository;
     }
 
 
@@ -210,6 +214,70 @@ public class CustomerController {
 //        boolean flag = CustomerService.CustomerHailing(username,requestOrder);
         Customer customer = customerRepository.findByCustomerName(customerName);
 //        if (CustomerService.CustomerHailing(customerName, requestOrder))
+        //确定区域
+        int tempX = customer.getCurX();
+        int tempY = customer.getCurY();
+        int sectorId = (tempY % 3) * 17 + tempX % 3;
+        List<Integer> sectorList = Arrays.asList(sectorId);
+
+        if (tempX / 3 == 0) {//最左一列区域
+            if (tempY / 3 == 0) {
+                sectorList.add(sectorId + 1);
+                sectorList.add(sectorId + 17);
+                sectorList.add(sectorId + 18);
+            } else if (tempY / 3 == 17) {
+                sectorList.add(sectorId + 1);
+                sectorList.add(sectorId - 17);
+                sectorList.add(sectorId - 16);
+            } else {
+                sectorList.add(sectorId + 1);
+                sectorList.add(sectorId + 17);
+                sectorList.add(sectorId - 17);
+                sectorList.add(sectorId + 18);
+                sectorList.add(sectorId - 16);
+            }
+        } else if (tempX / 3 == 17) {
+            if (tempY / 3 == 0) {
+                sectorList.add(sectorId - 1);
+                sectorList.add(sectorId + 17);
+                sectorList.add(sectorId + 16);
+            } else if (tempY / 3 == 17) {
+                sectorList.add(sectorId - 1);
+                sectorList.add(sectorId - 17);
+                sectorList.add(sectorId - 18);
+            } else {
+                sectorList.add(sectorId - 1);
+                sectorList.add(sectorId + 16);
+                sectorList.add(sectorId + 17);
+                sectorList.add(sectorId - 17);
+                sectorList.add(sectorId - 18);
+            }
+        } else {
+            if (tempY / 3 == 0) {
+                sectorList.add(sectorId + 1);
+                sectorList.add(sectorId + 17);
+                sectorList.add(sectorId - 1);
+                sectorList.add(sectorId + 18);
+                sectorList.add(sectorId + 16);
+            } else if (tempY / 3 == 17) {
+                sectorList.add(sectorId + 1);
+                sectorList.add(sectorId - 17);
+                sectorList.add(sectorId - 1);
+                sectorList.add(sectorId - 18);
+                sectorList.add(sectorId - 16);
+            } else {
+                sectorList.add(sectorId + 1);
+                sectorList.add(sectorId - 17);
+                sectorList.add(sectorId + 17);
+                sectorList.add(sectorId - 1);
+                sectorList.add(sectorId - 18);
+                sectorList.add(sectorId + 18);
+                sectorList.add(sectorId - 16);
+                sectorList.add(sectorId + 16);
+            }
+        }
+
+        // 如果还未请求过订单 生成订单 不然直接寻找司机
         if (requestOrderRepository.findByCustomerName(customerName) == null) {
             List<RequestOrder> requestOrderList = (List<RequestOrder>) requestOrderRepository.findAll();
             int x = requestOrderList.size();
@@ -223,36 +291,42 @@ public class CustomerController {
             requestOrder.setDriverName("");
             requestOrder.setDriver(new Driver());
             // 目的地 服务等级 由 用户在前端通过参数发送
-//            requestOrderList.add(requestOrder);
+        }
+        //找司机
+        requestOrder.setPriority(requestOrder.getPriority() + 1);
+        int freeCnt = 0;
+        for (int i = 0; i < sectorList.size(); ++i) {
+            List<Area> areaList = areaRepository.findBySectorId(sectorList.get(i));
+            for (int j = 0; j < areaList.size(); ++j) {
+                Driver driver = driverRepository.findById((long) areaList.get(i).getDriverId()).orElse(null);
+                if (driver != null) {
+                    if (driver.getIfBusy() == 0) {
+                        freeCnt += 1;
+                    }
+                    driver.getRequestOrderList().add(requestOrder);
+                    if (freeCnt >= 5) break;
+                }
+            }
+            if (freeCnt >= 5) break;
+        }
 
-
-            // 找司机
-            int flag = 0;
+        if (requestOrder.getPriority() >= 100) {
             List<Driver> driverList = (List<Driver>) driverRepository.findAll();
             for (int i = 0; i < driverList.size(); ++i) {
                 Driver tempDriver = driverList.get(i);
                 if (tempDriver.getIfBusy() == 0) {
                     int difx = Math.abs(tempDriver.getCurX() - customer.getCurX());
                     int dify = Math.abs(tempDriver.getCurY() - customer.getCurY());
-                    if (difx + dify <= 5) {
-                        tempDriver.getRequestOrderList().add(requestOrder);
-                        driverRepository.save(tempDriver);
-                        flag = 1;
-                    }
+                    tempDriver.getRequestOrderList().add(requestOrder);
+                    driverRepository.save(tempDriver);
                 }
             }
-            if (flag == 0)//没在合适区域找到司机
-            {
-                // TODO
-                requestOrder.setPriority(1);
-            }
-
-            requestOrderRepository.save(requestOrder);
-            return "正在为您寻找司机，请耐心等候";
-//            return CustomerService.findDrivers(username,requestOrder);
-        } else {
-            return "您有正在请求的订单，请等待该订单处理完成";
+            requestOrder.setPriority(0);
         }
+
+
+        requestOrderRepository.save(requestOrder);
+        return "正在为您寻找司机，请耐心等候";
     }
 
     @GetMapping("/Cancel")
