@@ -25,6 +25,7 @@ public class CustomerController {
     final OrderForDriverRepository orderForDriverRepository;
     final DriverRepository driverRepository;
     final RequestOrderRepository requestOrderRepository;
+//    final OrderRepository orderRepository;
     final CustomerRepository customerRepository;
     final AreaRepository areaRepository;
 
@@ -318,16 +319,16 @@ public class CustomerController {
         Customer customer = customerRepository.findByCustomerName(username);
         Driver driver = driverRepository.findByCurCustomerName(username);
 //        Order order = orderRepository.findById(driver.getCurOrderId()).orElse(null); TODO
-
+        OrderForCustomer order = orderForCustomerRepository.findById(driver.getCurOrderId()).orElse(null);
 
 //        Comment comment = new Comment(content, commentLevel);
         Comment comment = new Comment();
         customer.setTakeCount(customer.getTakeCount() + 1);
-//        customer.setTakeDistance(customer.getTakeDistance() + order.getDistance()); TODO
+        customer.setTakeDistance(customer.getTakeDistance() + order.getDistance()); //TODO
         customerRepository.save(customer);
 
         //更新 订单 及评论信息
-//        order.setCurState(1); TODO
+        order.setCurState(1); //TODO
         if (content == null) {
             comment.setContent("默认五星好评");
         } else {
@@ -336,7 +337,10 @@ public class CustomerController {
         }
         driver.setStars((commentLevel + driver.getStars() * driver.getFinishCount()) / driver.getFinishCount() + 1);
 
-//        orderRepository.save(order);TODO
+        orderForCustomerRepository.save(order);//TODO
+        OrderForDriver tempOrder = orderForDriverRepository.findById(order.getOrderForDriver().getId()).orElse(null);
+        orderForDriverRepository.save(tempOrder);//TODO
+
         commentRepository.save(comment);
         driverRepository.save(driver);
 

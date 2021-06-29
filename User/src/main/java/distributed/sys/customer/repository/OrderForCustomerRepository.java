@@ -3,9 +3,12 @@ package distributed.sys.customer.repository;
 import distributed.sys.customer.entity.OrderForCustomer;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
 @Repository
 public interface OrderForCustomerRepository extends CrudRepository<OrderForCustomer,Long> {
-    //    Order findById(Long id);
+        Optional<OrderForCustomer> findById(Long id);
 //    List<OrderForCustomer> findByStartTime(String st);
 //    List<OrderForCustomer> findByEndTime(String ed);
 //    //    List<OrderRepository> findByUserEmail(String userEmail);

@@ -14,6 +14,9 @@ public class OrderForDriver {
 //    @JoinColumn(name = "Comment")
 //    private Comment comment;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    private OrderForCustomer orderForCustomer;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Driver driver;

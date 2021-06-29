@@ -1,5 +1,5 @@
-/*
-        package distributed.sys.customer.entity;
+
+package distributed.sys.customer.entity;
 
 import lombok.Data;
 
@@ -7,7 +7,7 @@ import javax.persistence.*;
 
 @Data
 @Entity
-public class Order {
+public class Ordergnls {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -31,7 +31,7 @@ public class Order {
     private int curY;
     private int desX;
     private int desY;
-//    private double curX;
+    //    private double curX;
 //    private double curY;
 //    private double desX;
 //    private double desY;
@@ -55,4 +55,4 @@ public class Order {
 }
 
 
-*/
+

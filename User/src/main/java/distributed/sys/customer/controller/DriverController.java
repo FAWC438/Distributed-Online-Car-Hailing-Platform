@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 
@@ -215,36 +217,41 @@ public class DriverController {
         RequestOrder requestOrder = driver.getRequestOrderList().get(0);
         Customer customer = customerRepository.findByCustomerName(requestOrder.getCustomerName());
 //        Order order = new Order();TODO
+        OrderForDriver order= new OrderForDriver();
+
 
         driver.setDesX(requestOrder.getDesX());
         driver.setDesY(requestOrder.getDesY());
 //TODO
 //        order.setCustomer(customer);
-//        order.setDriver(driver);
-////        order.setComment(new Comment("默认五星好评",5));
-//        order.setCustomerName(customer.getCustomerName());
-//        order.setDriverName(driverName);
-//        order.setStartTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
-//        order.setEndTime("");
-//        order.setServiceLevel(driver.getServiceLevel());
-//        order.setCurX(driver.getCurX());
-//        order.setCurY(driver.getCurY());
-//        order.setDesX(requestOrder.getDesX());
-//        order.setDesY(requestOrder.getDesY());
-//        order.setDistance(Math.abs(order.getCurX() - order.getDesX()) + Math.abs(order.getCurY() - order.getDesY()));
-//        order.setPrice(order.getDistance() * 3 + 13);
-//        order.setCurState(0);
-//
-//        driver.getOrderList().add(order);
-////        driver.setCurOrder(order);
-//        driver.setCurOrderId(order.getId());
-//        driver.setCurCustomerName(customer.getCustomerName());
-//        //乘客已上车 请求订单生命结束 从数据库中删去
-//
-//
-//        requestOrderRepository.delete(requestOrder);
-//        orderRepository.save(order);
-//        driverRepository.save(driver);
+        order.setDriver(driver);
+//        order.setComment(new Comment("默认五星好评",5));
+        order.setCustomerName(customer.getCustomerName());
+        order.setDriverName(driverName);
+        order.setStartTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
+        order.setEndTime("");
+        order.setServiceLevel(driver.getServiceLevel());
+        order.setCurX(driver.getCurX());
+        order.setCurY(driver.getCurY());
+        order.setDesX(requestOrder.getDesX());
+        order.setDesY(requestOrder.getDesY());
+        order.setDistance(Math.abs(order.getCurX() - order.getDesX()) + Math.abs(order.getCurY() - order.getDesY()));
+        order.setPrice(order.getDistance() * 3 + 13);
+        order.setCurState(0);
+
+        driver.getOrderForDriverList().add(order);
+//        driver.setCurOrder(order);
+        driver.setCurOrderId(order.getId());
+        driver.setCurCustomerName(customer.getCustomerName());
+        //乘客已上车 请求订单生命结束 从数据库中删去
+
+
+        requestOrderRepository.delete(requestOrder);
+        orderForDriverRepository.save(order);//TODO
+        OrderForCustomer tempOrder = orderForCustomerRepository.findById(order.getOrderForCustomer().getId()).orElse(null);
+        orderForCustomerRepository.save(tempOrder);
+
+        driverRepository.save(driver);
 
 
 

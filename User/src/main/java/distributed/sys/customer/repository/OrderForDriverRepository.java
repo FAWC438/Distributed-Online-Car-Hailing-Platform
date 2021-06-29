@@ -1,10 +1,10 @@
 package distributed.sys.customer.repository;
 
-import distributed.sys.customer.entity.OrderForCustomer;
+import distributed.sys.customer.entity.OrderForDriver;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 @Repository
-public interface OrderForDriverRepository extends CrudRepository<OrderForCustomer,Long> {
+public interface OrderForDriverRepository extends CrudRepository<OrderForDriver,Long> {
     //    Order findById(Long id);
 //    List<OrderForDriver> findByStartTime(String st);
 //    List<OrderForDriver> findByEndTime(String ed);
