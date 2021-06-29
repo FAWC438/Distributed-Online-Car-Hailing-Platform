@@ -5,10 +5,9 @@ import lombok.Data;
 import javax.persistence.*;
 
 @Data
-@Table(name = "RequestOrder")
+@Entity
 public class RequestOrder {
     @Id
-    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
@@ -27,11 +26,24 @@ public class RequestOrder {
     private int curY;
     private int desX;
     private int desY;
+    private int serviceLevel;
+
 //    private double curX;
 //    private double curY;
 //    private double desX;
 //    private double desY;
-    private int serviceLevel;
-//    private int minDriverLevel;
 
+//    private int minDriverLevel;
+//    public RequestOrder(){
+//        this.customerName = "";
+//        this.startTime = "";
+//        this.driverName = "";
+//        this.priority = -1;
+//        this.ifCheck =0;
+//        this.curX = -1;
+//        this.curY = -1;
+//        this.desX = -1;
+//        this.desY = -1;
+//        this.serviceLevel = 0;
+//    }
 }

@@ -7,7 +7,6 @@ import distributed.sys.customer.dao.OrderRepository;
 import distributed.sys.customer.dao.RequestOrderRepository;
 import distributed.sys.customer.entity.*;
 import distributed.sys.customer.server.WebSocketServer;
-import distributed.sys.customer.service.CustomerService.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,11 +37,11 @@ public class DriverController {
         this.driverRepository = driverRepository;
     }
 
-    public static RequestOrderRepository requestOrderRepository;
+    public RequestOrderRepository requestOrderRepository;
 
     @Autowired
     public void setRequestOrderRepository(RequestOrderRepository requestOrderRepository) {
-        CustomerService.requestOrderRepository = requestOrderRepository;
+        this.requestOrderRepository = requestOrderRepository;
     }
 
     public CustomerRepository customerRepository;
@@ -86,8 +85,7 @@ public class DriverController {
 
     @RequestMapping("/register")
     public String register(Driver driver) {
-        if (driverRepository.findByDriverName(driver.getDriverName()) == null)
-        {
+        if (driverRepository.findByDriverName(driver.getDriverName()) == null) {
             driver.setFinishCount(0);
             driver.setFinishDistance(0);
 //        driver.setServiceLevel(1);
@@ -101,15 +99,14 @@ public class DriverController {
             driver.setDesY(driver.getCurY());
 
             driver.setOrderList(new ArrayList<>());
-            driver.setCurOrder(new Order());
+//            driver.setCurOrder(new Order());
             driver.setCommentList(new ArrayList<>());
             driver.setRequestOrderList(new ArrayList<>());
             driver.setCurCustomerName("");
             driverRepository.save(driver);
 
             return "redirect:/login";
-        }
-        else{
+        } else {
             System.out.println("司机用户名已存在");
             return "redirect:/register";
         }
@@ -247,7 +244,8 @@ public class DriverController {
         order.setCurState(0);
 
         driver.getOrderList().add(order);
-        driver.setCurOrder(order);
+//        driver.setCurOrder(order);
+        driver.setCurOrderId(order.getId());
         driver.setCurCustomerName(customer.getCustomerName());
         //乘客已上车 请求订单生命结束 从数据库中删去
         requestOrderRepository.delete(requestOrder);
@@ -255,7 +253,7 @@ public class DriverController {
         driverRepository.save(driver);
 
         WebSocketServer webSocketServer = new WebSocketServer();
-        String message = "司机：" + driverName +"已前往指定地点，请耐心等候";
+        String message = "司机：" + driverName + "已前往指定地点，请耐心等候";
         try {
             webSocketServer.sendInfo(message, customer.getId());
         } catch (IOException e) {
@@ -265,15 +263,18 @@ public class DriverController {
     }
 
     @RequestMapping("/finishOrder")
-    public String finishOrder(String driverName)
-    {
-        Driver driver =  driverRepository.findByDriverName(driverName);
-        Order order  = driver.getCurOrder();
+    public String finishOrder(String driverName) {
+        Driver driver = driverRepository.findByDriverName(driverName);
+//        Order order  = driver.getCurOrder();
+//        String oderId = driver.getCurOrderId();
+        Order order = orderRepository.findById(driver.getCurOrderId()).orElse(null);
         //更新order 信息
         order.setEndTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
+//        order.setEndTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
 
         //更新driver 信息
-        driver.setCurOrder(new Order());
+//        driver.setCurOrder(new Order());
+        driver.setCurOrderId((long) -1);
         driver.setIfBusy(0);
         driver.setFinishCount(driver.getFinishCount() + 1);
         driver.setFinishDistance(driver.getFinishCount() + order.getDistance());

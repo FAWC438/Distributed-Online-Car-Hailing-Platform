@@ -7,15 +7,13 @@ import javax.persistence.*;
 import java.util.List;
 
 @Data
-@Table(name = "Customer")
+@Entity
 public class Customer {
     @Id
-    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     private int ifLogin;
-
     @JsonView(Views.Public.class)
     private String CustomerName;
     @JsonView(Views.Internal.class)
@@ -52,7 +50,6 @@ public class Customer {
 
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "RequestOrder")
     private RequestOrder requestOrder;
 
 //    @OneToOne(cascade = CascadeType.ALL)
@@ -60,5 +57,21 @@ public class Customer {
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<Order> orderList;
+
+//    public Customer()
+//    {
+//        this.ifLogin = 0;
+//        this.password = "";
+//        this.email = "";
+//        this.curX = -1;
+//        this.curY = -1;
+//        this.membershipLevel = 0;
+//        this.membershipPoint = 0;
+//        this.CustomerName = "";
+//        this.takeCount = 0;
+//        this.takeDistance = 0;
+////        this.requestOrder = new RequestOrder();
+////        this.orderList = new ArrayList<Order>();
+//    }
 
 }

@@ -5,15 +5,14 @@ import lombok.Data;
 import javax.persistence.*;
 
 @Data
-@Table(name = "Comment")
+@Entity
 public class Comment {
     @Id
-    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    String content;
-    int commentLevel;
+    private String content;
+    private int commentLevel;
 
     @ManyToOne(cascade = CascadeType.ALL)
     private Driver driver;
@@ -21,9 +20,14 @@ public class Comment {
 //    @OneToOne(cascade = CascadeType.ALL, mappedBy = "Order")
 //    private Order order;
 
-    public Comment(String content, int commentLevel)
-    {
-        this.commentLevel = commentLevel;
-        this.content = content;
-    }
+//    public Comment(String content, int commentLevel)
+//    {
+//        this.commentLevel = commentLevel;
+//        this.content = content;
+//    }
+//
+//    public Comment() {
+//        this.content = "" ;
+//        this.commentLevel = 5;
+//    }
 }

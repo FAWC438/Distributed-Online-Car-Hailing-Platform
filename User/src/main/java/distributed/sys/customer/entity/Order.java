@@ -5,10 +5,9 @@ import lombok.Data;
 import javax.persistence.*;
 
 @Data
-@Table(name = "Order")
+@Entity
 public class Order {
     @Id
-    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
@@ -40,4 +39,16 @@ public class Order {
     private int price;
     private int curState;// 0未完成 1已完成
 //    private int curOrderId;
+//    public Order(){
+//        this.customerName = "";
+//        this.driverName = "";
+//        this.startTime = "";
+//        this.endTime = "";
+//        this.serviceLevel =0;
+//        this.curX = -1;
+//        this.curY = -1;
+//        this.desX = -1;
+//        this.desY = -1;
+//    }
+
 }

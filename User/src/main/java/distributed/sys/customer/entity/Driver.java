@@ -7,10 +7,9 @@ import javax.persistence.*;
 import java.util.List;
 
 @Data
-@Table(name = "Driver")
+@Entity
 public class Driver {
     @Id
-    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
@@ -24,7 +23,8 @@ public class Driver {
     private List<Comment> commentList;
 
     private int ifLogin;
-    private Order curOrder;
+//    private Order curOrder;
+    private  Long curOrderId;
     private String curCustomerName;
 
     @JsonView(Views.Public.class)
@@ -73,4 +73,29 @@ public class Driver {
 //    private double desX;
 //    @JsonView(Views.Internal.class)
 //    private double desY;
+
+//    public Driver()
+//    {
+//        this.ifLogin = 0;
+//        this.curCustomerName = "";
+//        this.driverLevel = 0;
+//        this.email = "";
+//        this.password = "";
+//        this.finishCount = 0;
+//        this.finishDistance = 0;
+//        this.serviceLevel = 0;
+//        this.driverPoint =0;
+//        this.driverLevel = 0;
+//        this.stars = 0;
+//        this.ifBusy=  0;
+//        this.curX = 25;
+//        this.curY = 25;
+//        this.desX = 25;
+//        this.desY = 25;
+////        this.requestOrderList = new ArrayList<RequestOrder>();
+////        this.orderList = new ArrayList<Order>();
+////        this.commentList = new ArrayList<Comment>();
+//    }
+
+
 }

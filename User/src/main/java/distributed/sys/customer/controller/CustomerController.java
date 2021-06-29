@@ -5,7 +5,6 @@ package distributed.sys.customer.controller;
 import com.fasterxml.jackson.annotation.JsonView;
 import distributed.sys.customer.dao.*;
 import distributed.sys.customer.entity.*;
-import distributed.sys.customer.service.CustomerService.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,11 +41,11 @@ public class CustomerController {
         this.driverRepository = driverRepository;
     }
 
-    public static RequestOrderRepository requestOrderRepository;
+    public RequestOrderRepository requestOrderRepository;
 
     @Autowired
     public void setRequestOrderRepository(RequestOrderRepository requestOrderRepository) {
-        CustomerService.requestOrderRepository = requestOrderRepository;
+        this.requestOrderRepository = requestOrderRepository;
     }
 
     public CustomerRepository customerRepository;
@@ -171,7 +170,9 @@ public class CustomerController {
     public String userHailing(String customerName, RequestOrder requestOrder) {
 //        boolean flag = CustomerService.CustomerHailing(username,requestOrder);
         Customer customer = customerRepository.findByCustomerName(customerName);
-        if (CustomerService.CustomerHailing(customerName, requestOrder)) {
+//        if (CustomerService.CustomerHailing(customerName, requestOrder))
+        if(requestOrderRepository.findByCustomerName(customerName) == null)
+        {
             List<RequestOrder> requestOrderList = (List<RequestOrder>) requestOrderRepository.findAll();
             int x = requestOrderList.size();
             requestOrder.setCustomer(customerRepository.findByCustomerName(customerName));
@@ -181,8 +182,8 @@ public class CustomerController {
             requestOrder.setCurY(customer.getCurY());
             requestOrder.setIfCheck(0);
             requestOrder.setPriority(0);
-            requestOrder.setDriverName(null);
-            requestOrder.setDriver(null);
+            requestOrder.setDriverName("");
+            requestOrder.setDriver(new Driver());
             // 目的地 服务等级 由 用户在前端通过参数发送
 //            requestOrderList.add(requestOrder);
 
@@ -217,7 +218,9 @@ public class CustomerController {
 
     @GetMapping("/Cancel")
     public String userCancel(String username, RequestOrder requestOrder) {
-        if (CustomerService.CustomerHailing(username, requestOrder)) {
+//        if (CustomerService.CustomerHailing(username, requestOrder))
+        if(requestOrderRepository.findByCustomerName(username) == null)
+        {
             //取消该订单
             if (requestOrderRepository.findByCustomerName(username).getIfCheck() == 1) {
                 return "司机马上赶来，请等待";
@@ -247,8 +250,9 @@ public class CustomerController {
         //更新用户信息
         Customer customer = customerRepository.findByCustomerName(username);
         Driver driver = driverRepository.findByCurCustomerName(username);
-        Order order = driver.getCurOrder();
-        Comment comment = new Comment(content, commentLevel);
+        Order order = orderRepository.findById(driver.getCurOrderId()).orElse(null);
+//        Comment comment = new Comment(content, commentLevel);
+        Comment comment = new Comment();
         customer.setTakeCount(customer.getTakeCount() + 1);
         customer.setTakeDistance(customer.getTakeDistance() + order.getDistance());
         customerRepository.save(customer);
@@ -258,7 +262,11 @@ public class CustomerController {
         if (content == null) {
             comment.setContent("默认五星好评");
         }
-
+        else
+        {
+            comment.setContent(content);
+            comment.setCommentLevel(commentLevel);
+        }
         driver.setStars((commentLevel + driver.getStars() * driver.getFinishCount()) / driver.getFinishCount() + 1);
 
         orderRepository.save(order);
