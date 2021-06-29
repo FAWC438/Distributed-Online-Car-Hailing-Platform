@@ -243,6 +243,7 @@ public class CustomerController {
             }
             if (flag == 0)//没在合适区域找到司机
             {
+                // TODO
                 requestOrder.setPriority(1);
             }
 
