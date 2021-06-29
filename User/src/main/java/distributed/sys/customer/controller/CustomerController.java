@@ -19,57 +19,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/user/customer")
 public class CustomerController {
-//    public CommentRepository commentRepository;
-
-    //    @Autowired
-//    public void setCommentRepository(CommentRepository commentRepository) {
-//        this.commentRepository = commentRepository;
-//    }
-//
-//    public OrderRepository orderRepository;
-//
-//    @Autowired
-//    public void setOrderRepository(OrderRepository orderRepository) {
-//        this.orderRepository = orderRepository;
-//    }
-//
-//    public DriverRepository driverRepository;
-//
-//    @Autowired
-//    public void setDriverRepository(DriverRepository driverRepository) {
-//        this.driverRepository = driverRepository;
-//    }
-//
-//    public RequestOrderRepository requestOrderRepository;
-//
-//    @Autowired
-//    public void setRequestOrderRepository(RequestOrderRepository requestOrderRepository) {
-//        this.requestOrderRepository = requestOrderRepository;
-//    }
-//
-//    public CustomerRepository customerRepository;
-//
-//    @Autowired
-//    public void setCustomerRepository(CustomerRepository customerRepository) {
-//        this.customerRepository = customerRepository;
-//    }
-//    @Autowired
-//    public CommentRepository commentRepository;
-//
-//    @Autowired
-//    public OrderRepository orderRepository;
-//
-//    @Autowired
-//    public DriverRepository driverRepository;
-//
-//    @Autowired
-//    public RequestOrderRepository requestOrderRepository;
-//
-//    @Autowired
-//    public CustomerRepository customerRepository;
-//
     final CommentRepository commentRepository;
-    final OrderRepository orderRepository;
+    //    final OrderRepository orderRepository;
+    final OrderForCustomerRepository orderForCustomerRepository;
+    final OrderForDriverRepository orderForDriverRepository;
     final DriverRepository driverRepository;
     final RequestOrderRepository requestOrderRepository;
     final CustomerRepository customerRepository;
@@ -77,10 +30,12 @@ public class CustomerController {
 
 
     @Autowired
-    public CustomerController(CommentRepository commentRepository, OrderRepository orderRepository, DriverRepository driverRepository,
-                              RequestOrderRepository requestOrderRepository, CustomerRepository customerRepository, AreaRepository areaRepository) {
+    public CustomerController(CommentRepository commentRepository, DriverRepository driverRepository, OrderForDriverRepository orderForDriverRepository, OrderForCustomerRepository orderForCustomerRepository
+            , RequestOrderRepository requestOrderRepository, CustomerRepository customerRepository, AreaRepository areaRepository) {
         this.commentRepository = commentRepository;
-        this.orderRepository = orderRepository;
+//        this.orderRepository = orderRepository;
+        this.orderForCustomerRepository = orderForCustomerRepository;
+        this.orderForDriverRepository = orderForDriverRepository;
         this.driverRepository = driverRepository;
         this.requestOrderRepository = requestOrderRepository;
         this.customerRepository = customerRepository;
@@ -362,15 +317,17 @@ public class CustomerController {
         //更新用户信息
         Customer customer = customerRepository.findByCustomerName(username);
         Driver driver = driverRepository.findByCurCustomerName(username);
-        Order order = orderRepository.findById(driver.getCurOrderId()).orElse(null);
+//        Order order = orderRepository.findById(driver.getCurOrderId()).orElse(null); TODO
+
+
 //        Comment comment = new Comment(content, commentLevel);
         Comment comment = new Comment();
         customer.setTakeCount(customer.getTakeCount() + 1);
-        customer.setTakeDistance(customer.getTakeDistance() + order.getDistance());
+//        customer.setTakeDistance(customer.getTakeDistance() + order.getDistance()); TODO
         customerRepository.save(customer);
 
         //更新 订单 及评论信息
-        order.setCurState(1);
+//        order.setCurState(1); TODO
         if (content == null) {
             comment.setContent("默认五星好评");
         } else {
@@ -379,7 +336,7 @@ public class CustomerController {
         }
         driver.setStars((commentLevel + driver.getStars() * driver.getFinishCount()) / driver.getFinishCount() + 1);
 
-        orderRepository.save(order);
+//        orderRepository.save(order);TODO
         commentRepository.save(comment);
         driverRepository.save(driver);
 

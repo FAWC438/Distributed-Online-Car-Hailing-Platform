@@ -1,4 +1,5 @@
-package distributed.sys.customer.entity;
+/*
+        package distributed.sys.customer.entity;
 
 import lombok.Data;
 
@@ -10,16 +11,16 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+//    @OneToOne(cascade = CascadeType.ALL)
+//    @JoinColumn(name = "Comment")
+//    private Comment comment;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Customer customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Driver driver;
-
-//    @OneToOne(cascade = CascadeType.ALL)
-//    @JoinColumn(name = "Comment")
-//    private Comment comment;
 
     private String customerName;
     private String driverName;
@@ -52,3 +53,6 @@ public class Order {
 //    }
 
 }
+
+
+*/

@@ -6,44 +6,46 @@ import javax.persistence.*;
 
 @Data
 @Entity
-public class RequestOrder {
+public class OrderForDriver {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+//    @OneToOne(cascade = CascadeType.ALL)
+//    @JoinColumn(name = "Comment")
+//    private Comment comment;
 
-    private String customerName;
-    private String startTime;
-    private String driverName;
-    private int priority;
-    private int ifCheck;
-    private int curX;
-    private int curY;
-    private int desX;
-    private int desY;
-    private int serviceLevel;
-
-    @OneToOne(cascade = CascadeType.ALL)
-    private Customer customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Driver driver;
 
-//    private double curX;
+    private String customerName;
+    private String driverName;
+    private String startTime;
+    private String endTime;
+    private int serviceLevel;
+    private int curX;
+    private int curY;
+    private int desX;
+    private int desY;
+    //    private double curX;
 //    private double curY;
 //    private double desX;
 //    private double desY;
-
-//    private int minDriverLevel;
-//    public RequestOrder(){
+//    private int useTime;
+    private int distance;
+    private int price;
+    private int curState;// 0未完成 1已完成
+//    private int curOrderId;
+//    public Order(){
 //        this.customerName = "";
-//        this.startTime = "";
 //        this.driverName = "";
-//        this.priority = -1;
-//        this.ifCheck =0;
+//        this.startTime = "";
+//        this.endTime = "";
+//        this.serviceLevel =0;
 //        this.curX = -1;
 //        this.curY = -1;
 //        this.desX = -1;
 //        this.desY = -1;
-//        this.serviceLevel = 0;
 //    }
+
 }

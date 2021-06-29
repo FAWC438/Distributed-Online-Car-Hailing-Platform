@@ -18,9 +18,11 @@ public class Driver {
     private List<RequestOrder> requestOrderList;
 //    private List<RequestOrder> requestOrderList = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL)//TODO
     @JoinColumn(name = "driver_id")
-    private List<Order> orderList;
+    private List<OrderForDriver> orderForDriverList;
+//    @JoinColumn(name = "driver_id")
+
 //    private List<Order> orderList = new ArrayList<>();
 
     @OneToMany(cascade =  CascadeType.ALL)

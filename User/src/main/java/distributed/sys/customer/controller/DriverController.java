@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 
@@ -19,7 +17,9 @@ import java.util.List;
 @RequestMapping("/user/driver")
 public class DriverController {
     final CommentRepository commentRepository;
-    final OrderRepository orderRepository;
+    //    final OrderRepository orderRepository;
+    final OrderForCustomerRepository orderForCustomerRepository;
+    final OrderForDriverRepository orderForDriverRepository;
     final DriverRepository driverRepository;
     final RequestOrderRepository requestOrderRepository;
     final CustomerRepository customerRepository;
@@ -27,10 +27,12 @@ public class DriverController {
 
 
     @Autowired
-    public DriverController(CommentRepository commentRepository, OrderRepository orderRepository, DriverRepository driverRepository,
-                              RequestOrderRepository requestOrderRepository, CustomerRepository customerRepository, AreaRepository areaRepository) {
+    public DriverController(CommentRepository commentRepository, DriverRepository driverRepository, OrderForDriverRepository orderForDriverRepository, OrderForCustomerRepository orderForCustomerRepository
+            , RequestOrderRepository requestOrderRepository, CustomerRepository customerRepository, AreaRepository areaRepository) {
         this.commentRepository = commentRepository;
-        this.orderRepository = orderRepository;
+//        this.orderRepository = orderRepository;
+        this.orderForCustomerRepository = orderForCustomerRepository;
+        this.orderForDriverRepository = orderForDriverRepository;
         this.driverRepository = driverRepository;
         this.requestOrderRepository = requestOrderRepository;
         this.customerRepository = customerRepository;
@@ -212,37 +214,37 @@ public class DriverController {
         Driver driver = driverRepository.findByDriverName(driverName);
         RequestOrder requestOrder = driver.getRequestOrderList().get(0);
         Customer customer = customerRepository.findByCustomerName(requestOrder.getCustomerName());
-        Order order = new Order();
+//        Order order = new Order();TODO
 
         driver.setDesX(requestOrder.getDesX());
         driver.setDesY(requestOrder.getDesY());
-
-        order.setCustomer(customer);
-        order.setDriver(driver);
-//        order.setComment(new Comment("默认五星好评",5));
-        order.setCustomerName(customer.getCustomerName());
-        order.setDriverName(driverName);
-        order.setStartTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
-        order.setEndTime("");
-        order.setServiceLevel(driver.getServiceLevel());
-        order.setCurX(driver.getCurX());
-        order.setCurY(driver.getCurY());
-        order.setDesX(requestOrder.getDesX());
-        order.setDesY(requestOrder.getDesY());
-        order.setDistance(Math.abs(order.getCurX() - order.getDesX()) + Math.abs(order.getCurY() - order.getDesY()));
-        order.setPrice(order.getDistance() * 3 + 13);
-        order.setCurState(0);
-
-        driver.getOrderList().add(order);
-//        driver.setCurOrder(order);
-        driver.setCurOrderId(order.getId());
-        driver.setCurCustomerName(customer.getCustomerName());
-        //乘客已上车 请求订单生命结束 从数据库中删去
-
-
-        requestOrderRepository.delete(requestOrder);
-        orderRepository.save(order);
-        driverRepository.save(driver);
+//TODO
+//        order.setCustomer(customer);
+//        order.setDriver(driver);
+////        order.setComment(new Comment("默认五星好评",5));
+//        order.setCustomerName(customer.getCustomerName());
+//        order.setDriverName(driverName);
+//        order.setStartTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
+//        order.setEndTime("");
+//        order.setServiceLevel(driver.getServiceLevel());
+//        order.setCurX(driver.getCurX());
+//        order.setCurY(driver.getCurY());
+//        order.setDesX(requestOrder.getDesX());
+//        order.setDesY(requestOrder.getDesY());
+//        order.setDistance(Math.abs(order.getCurX() - order.getDesX()) + Math.abs(order.getCurY() - order.getDesY()));
+//        order.setPrice(order.getDistance() * 3 + 13);
+//        order.setCurState(0);
+//
+//        driver.getOrderList().add(order);
+////        driver.setCurOrder(order);
+//        driver.setCurOrderId(order.getId());
+//        driver.setCurCustomerName(customer.getCustomerName());
+//        //乘客已上车 请求订单生命结束 从数据库中删去
+//
+//
+//        requestOrderRepository.delete(requestOrder);
+//        orderRepository.save(order);
+//        driverRepository.save(driver);
 
 
 
@@ -262,9 +264,9 @@ public class DriverController {
         Driver driver = driverRepository.findByDriverName(driverName);
 //        Order order  = driver.getCurOrder();
 //        String oderId = driver.getCurOrderId();
-        Order order = orderRepository.findById(driver.getCurOrderId()).orElse(null);
+//        Order order = orderRepository.findById(driver.getCurOrderId()).orElse(null);TODO
         //更新order 信息
-        order.setEndTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
+//        order.setEndTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));TODO
 //        order.setEndTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
 
         //更新driver 信息
@@ -272,7 +274,7 @@ public class DriverController {
         driver.setCurOrderId((long) -1);
         driver.setIfBusy(0);
         driver.setFinishCount(driver.getFinishCount() + 1);
-        driver.setFinishDistance(driver.getFinishCount() + order.getDistance());
+//        driver.setFinishDistance(driver.getFinishCount() + order.getDistance());TODO
         driver.setDesX(25);
         driver.setDesY(25);
 
@@ -282,7 +284,7 @@ public class DriverController {
         areaRepository.save(area);
 
         driverRepository.save(driver);
-        orderRepository.save(order);
+//        orderRepository.save(order);TODO
         return "乘客已送达";
     }
 

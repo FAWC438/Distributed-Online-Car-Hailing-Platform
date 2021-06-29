@@ -17,7 +17,9 @@ public class Customer {
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "customer_id")
-    private List<Order> orderList;
+    private List<OrderForCustomer> orderForCustomerList;
+//    @JoinColumn(name = "customer_id")
+
 //    private List<Order> orderList = new ArrayList<>();
 
     private int ifLogin;
