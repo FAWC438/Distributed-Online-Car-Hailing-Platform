@@ -1,6 +1,5 @@
 package distributed.sys.customer.entity;
 
-import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -13,29 +12,28 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    private RequestOrder requestOrder;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "customer_id")
+    private List<Order> orderList;
+//    private List<Order> orderList = new ArrayList<>();
+
     private int ifLogin;
-    @JsonView(Views.Public.class)
-    private String CustomerName;
-    @JsonView(Views.Internal.class)
+    private String customerName;
     private String email;
-    @JsonView(Views.Internal.class)
     private String password;
 
     // 用户乘坐里程数 和 用户乘坐次数
-    @JsonView(Views.Public.class)
     private int takeCount;
-    @JsonView(Views.Public.class)
     private int takeDistance;
 
-    @JsonView(Views.Public.class)
     private int membershipPoint;
     //    private String membershipLevel;
-    @JsonView(Views.Public.class)
     private int membershipLevel;
 
-    @JsonView(Views.Internal.class)
     private int curX;
-    @JsonView(Views.Internal.class)
     private int curY;
 
 //    @JsonView(Views.Internal.class)
@@ -49,14 +47,12 @@ public class Customer {
 
 
 
-    @OneToOne(cascade = CascadeType.ALL)
-    private RequestOrder requestOrder;
+
 
 //    @OneToOne(cascade = CascadeType.ALL)
 //    @JoinColumn(name = "Order")
 
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<Order> orderList;
+
 
 //    public Customer()
 //    {

@@ -2,9 +2,8 @@ package distributed.sys.customer.controller;
 
 //import io.micrometer.core.instrument.Tag;
 
-import com.fasterxml.jackson.annotation.JsonView;
-import distributed.sys.customer.dao.*;
 import distributed.sys.customer.entity.*;
+import distributed.sys.customer.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,47 +12,77 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 //@Tag(name = "乘车用户接口")
 @RestController
 @RequestMapping("/user/customer")
 public class CustomerController {
-    public CommentRepository commentRepository;
+//    public CommentRepository commentRepository;
+
+    //    @Autowired
+//    public void setCommentRepository(CommentRepository commentRepository) {
+//        this.commentRepository = commentRepository;
+//    }
+//
+//    public OrderRepository orderRepository;
+//
+//    @Autowired
+//    public void setOrderRepository(OrderRepository orderRepository) {
+//        this.orderRepository = orderRepository;
+//    }
+//
+//    public DriverRepository driverRepository;
+//
+//    @Autowired
+//    public void setDriverRepository(DriverRepository driverRepository) {
+//        this.driverRepository = driverRepository;
+//    }
+//
+//    public RequestOrderRepository requestOrderRepository;
+//
+//    @Autowired
+//    public void setRequestOrderRepository(RequestOrderRepository requestOrderRepository) {
+//        this.requestOrderRepository = requestOrderRepository;
+//    }
+//
+//    public CustomerRepository customerRepository;
+//
+//    @Autowired
+//    public void setCustomerRepository(CustomerRepository customerRepository) {
+//        this.customerRepository = customerRepository;
+//    }
+//    @Autowired
+//    public CommentRepository commentRepository;
+//
+//    @Autowired
+//    public OrderRepository orderRepository;
+//
+//    @Autowired
+//    public DriverRepository driverRepository;
+//
+//    @Autowired
+//    public RequestOrderRepository requestOrderRepository;
+//
+//    @Autowired
+//    public CustomerRepository customerRepository;
+//
+    final CommentRepository commentRepository;
+    final OrderRepository orderRepository;
+    final DriverRepository driverRepository;
+    final RequestOrderRepository requestOrderRepository;
+    final CustomerRepository customerRepository;
 
     @Autowired
-    public void setCommentRepository(CommentRepository commentRepository) {
+    public CustomerController(CommentRepository commentRepository, OrderRepository orderRepository, DriverRepository driverRepository,
+                              RequestOrderRepository requestOrderRepository, CustomerRepository customerRepository) {
         this.commentRepository = commentRepository;
-    }
-
-    public OrderRepository orderRepository;
-
-    @Autowired
-    public void setOrderRepository(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
-    }
-
-    public DriverRepository driverRepository;
-
-    @Autowired
-    public void setDriverRepository(DriverRepository driverRepository) {
         this.driverRepository = driverRepository;
-    }
-
-    public RequestOrderRepository requestOrderRepository;
-
-    @Autowired
-    public void setRequestOrderRepository(RequestOrderRepository requestOrderRepository) {
         this.requestOrderRepository = requestOrderRepository;
-    }
-
-    public CustomerRepository customerRepository;
-
-    @Autowired
-    public void setCustomerRepository(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
     }
+
 
     @GetMapping("/")
     public String index() {
@@ -105,9 +134,14 @@ public class CustomerController {
         return "redirect:/login";
     }
 
-    @RequestMapping("/resgister")
-    public String register(Customer customer) {
-        if (customerRepository.findByCustomerName(customer.getCustomerName()) == null) {
+    @RequestMapping("/register")
+//    public String register(Customer customer)
+    public String register(String customerName, String password, String email) {
+        Customer customer = new Customer();
+        if (customerRepository.findByCustomerName(customerName) == null) {
+            customer.setCustomerName(customerName);
+            customer.setPassword(password);
+            customer.setEmail(email);
             customer.setTakeCount(0);
             customer.setTakeDistance(0);
             customer.setMembershipLevel(1);
@@ -115,13 +149,15 @@ public class CustomerController {
             customer.setCurX(-1);
             customer.setCurX(-1);
             customer.setIfLogin(0);
-            customer.setRequestOrder(new RequestOrder());
-            customer.setOrderList(new ArrayList<>());
+//            customer.setRequestOrder(new RequestOrder());
+//            customer.setOrderList(new ArrayList<>());
+            System.out.println("\n\n\n\n\n\n\n custmoer" + customer + "----------------------------");
+
             customerRepository.save(customer);
-            return "redirect:/Index";
+            return "注册成功";
         } else {
             System.out.println("用户名已存在，请重新注册");
-            return "redirect:/register";
+            return "用户名已存在，请重新注册";
         }
     }
 
@@ -132,13 +168,15 @@ public class CustomerController {
 //        String retStr = customer.getCustomerName()
 //    }
     @GetMapping("/Index")//初始页面 暂时返回视图
-    @JsonView(Views.Public.class)
-    public Customer IndexView(String username) {
-        return customerRepository.findByCustomerName(username);
+//    @JsonView(Views.Public.class)
+    public String IndexView(String username) {
+        Customer customer = customerRepository.findByCustomerName(username);
+        System.out.println(customer);
+        return String.valueOf(customer);
     }
 
     @RequestMapping("/updateCustomer")
-    public void updateCustomer(String customerName, int curX, int curY) {
+    public String updateCustomer(String customerName, int curX, int curY) {
         Customer customer = customerRepository.findByCustomerName(customerName);
         //获取当前位置
         customer.setCurX(curX);
@@ -150,6 +188,7 @@ public class CustomerController {
 
 
         customerRepository.save(customer);
+        return "位置更新成功";
     }
 
 //    @RequestMapping("/edit")
@@ -171,8 +210,7 @@ public class CustomerController {
 //        boolean flag = CustomerService.CustomerHailing(username,requestOrder);
         Customer customer = customerRepository.findByCustomerName(customerName);
 //        if (CustomerService.CustomerHailing(customerName, requestOrder))
-        if(requestOrderRepository.findByCustomerName(customerName) == null)
-        {
+        if (requestOrderRepository.findByCustomerName(customerName) == null) {
             List<RequestOrder> requestOrderList = (List<RequestOrder>) requestOrderRepository.findAll();
             int x = requestOrderList.size();
             requestOrder.setCustomer(customerRepository.findByCustomerName(customerName));
@@ -219,8 +257,7 @@ public class CustomerController {
     @GetMapping("/Cancel")
     public String userCancel(String username, RequestOrder requestOrder) {
 //        if (CustomerService.CustomerHailing(username, requestOrder))
-        if(requestOrderRepository.findByCustomerName(username) == null)
-        {
+        if (requestOrderRepository.findByCustomerName(username) == null) {
             //取消该订单
             if (requestOrderRepository.findByCustomerName(username).getIfCheck() == 1) {
                 return "司机马上赶来，请等待";
@@ -261,9 +298,7 @@ public class CustomerController {
         order.setCurState(1);
         if (content == null) {
             comment.setContent("默认五星好评");
-        }
-        else
-        {
+        } else {
             comment.setContent(content);
             comment.setCommentLevel(commentLevel);
         }

@@ -13,14 +13,20 @@ public class Driver {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "RequestOrder")
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "driver_id")
     private List<RequestOrder> requestOrderList;
+//    private List<RequestOrder> requestOrderList = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "Order")
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "driver_id")
     private List<Order> orderList;
+//    private List<Order> orderList = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "Comment")
+    @OneToMany(cascade =  CascadeType.ALL)
+    @JoinColumn(name = "driver_id")
     private List<Comment> commentList;
+//    private List<Comment> commentList = new ArrayList<>();
 
     private int ifLogin;
 //    private Order curOrder;

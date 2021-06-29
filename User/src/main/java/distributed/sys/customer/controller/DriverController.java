@@ -1,11 +1,11 @@
 package distributed.sys.customer.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import distributed.sys.customer.dao.CustomerRepository;
-import distributed.sys.customer.dao.DriverRepository;
-import distributed.sys.customer.dao.OrderRepository;
-import distributed.sys.customer.dao.RequestOrderRepository;
 import distributed.sys.customer.entity.*;
+import distributed.sys.customer.repository.CustomerRepository;
+import distributed.sys.customer.repository.DriverRepository;
+import distributed.sys.customer.repository.OrderRepository;
+import distributed.sys.customer.repository.RequestOrderRepository;
 import distributed.sys.customer.server.WebSocketServer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -65,7 +64,7 @@ public class DriverController {
                     Driver driver = driverRepository.findByDriverName(driverName);
                     driver.setIfLogin(1);
                     driverRepository.save(driver);
-                    return "redirect:/Index";
+                    return "登陆成功";
                 } else {
                     return "密码错误";
                 }
@@ -80,7 +79,7 @@ public class DriverController {
         Driver driver = driverRepository.findByDriverName(driverName);
         driver.setIfLogin(0);
         System.out.println("司机" + driverName + "已登出");
-        return "redirect:/login";
+        return "登出成功";
     }
 
     @RequestMapping("/register")
@@ -98,17 +97,17 @@ public class DriverController {
             driver.setDesX(driver.getCurX());
             driver.setDesY(driver.getCurY());
 
-            driver.setOrderList(new ArrayList<>());
+//            driver.setOrderList(new ArrayList<>());
 //            driver.setCurOrder(new Order());
-            driver.setCommentList(new ArrayList<>());
-            driver.setRequestOrderList(new ArrayList<>());
+//            driver.setCommentList(new ArrayList<>());
+//            driver.setRequestOrderList(new ArrayList<>());
             driver.setCurCustomerName("");
             driverRepository.save(driver);
 
-            return "redirect:/login";
+            return "注册成功";
         } else {
             System.out.println("司机用户名已存在");
-            return "redirect:/register";
+            return "司机用户名已存在请重新注册";
         }
 
     }
@@ -118,7 +117,7 @@ public class DriverController {
         Driver driver = driverRepository.findByDriverName(driverName);
         driver.setServiceLevel(serviceLevel);
         driverRepository.save(driver);
-        return "redirect:/Index";
+        return "编辑成功";
     }
 
     @RequestMapping("/Index")//初始页面 暂时返回视图
@@ -129,7 +128,7 @@ public class DriverController {
 
 
     @RequestMapping("/updateDriver")
-    public void updateDriver(String driverName) {
+    public String updateDriver(String driverName) {
         Driver driver = driverRepository.findByDriverName(driverName);
 
         //暂定市中心人最多，司机们都住在那附近，因此在空闲状态司机将会前往市中心
@@ -174,6 +173,7 @@ public class DriverController {
         }
 
         driverRepository.save(driver);
+        return "司机信息更新成功";
     }
 
 

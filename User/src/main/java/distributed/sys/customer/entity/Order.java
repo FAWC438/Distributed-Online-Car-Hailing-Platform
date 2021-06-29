@@ -11,10 +11,10 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Customer customer;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Driver driver;
 
 //    @OneToOne(cascade = CascadeType.ALL)

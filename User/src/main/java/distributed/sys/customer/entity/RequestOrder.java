@@ -11,10 +11,10 @@ public class RequestOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "Customer")
+    @OneToOne(cascade = CascadeType.ALL)
     private Customer customer;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Driver driver;
 
     private String customerName;

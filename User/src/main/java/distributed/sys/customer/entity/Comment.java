@@ -14,7 +14,7 @@ public class Comment {
     private String content;
     private int commentLevel;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Driver driver;
 
 //    @OneToOne(cascade = CascadeType.ALL, mappedBy = "Order")

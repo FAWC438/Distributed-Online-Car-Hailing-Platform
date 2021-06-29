@@ -1,4 +1,4 @@
-package distributed.sys.customer.dao;
+package distributed.sys.customer.repository;
 
 import distributed.sys.customer.entity.Order;
 import org.springframework.data.repository.CrudRepository;
