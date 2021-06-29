@@ -7,7 +7,7 @@ import javax.persistence.*;
 
 @Data
 @Entity
-public class Ordergnls {
+public class OrderForUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;

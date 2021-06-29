@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 //@Tag(name = "乘车用户接口")
@@ -20,7 +20,7 @@ import java.util.List;
 @RequestMapping("/user/customer")
 public class CustomerController {
     final CommentRepository commentRepository;
-    //    final OrderRepository orderRepository;
+    final OrderForUserRepository orderForUserRepository;
     final OrderForCustomerRepository orderForCustomerRepository;
     final OrderForDriverRepository orderForDriverRepository;
     final DriverRepository driverRepository;
@@ -32,9 +32,9 @@ public class CustomerController {
 
     @Autowired
     public CustomerController(CommentRepository commentRepository, DriverRepository driverRepository, OrderForDriverRepository orderForDriverRepository, OrderForCustomerRepository orderForCustomerRepository
-            , RequestOrderRepository requestOrderRepository, CustomerRepository customerRepository, AreaRepository areaRepository) {
+            , RequestOrderRepository requestOrderRepository, OrderForUserRepository orderForUserRepository,CustomerRepository customerRepository, AreaRepository areaRepository) {
         this.commentRepository = commentRepository;
-//        this.orderRepository = orderRepository;
+        this.orderForUserRepository = orderForUserRepository;
         this.orderForCustomerRepository = orderForCustomerRepository;
         this.orderForDriverRepository = orderForDriverRepository;
         this.driverRepository = driverRepository;
@@ -106,14 +106,25 @@ public class CustomerController {
             customer.setTakeDistance(0);
             customer.setMembershipLevel(1);
             customer.setMembershipPoint(0);
-            customer.setCurX(-1);
-            customer.setCurX(-1);
+            customer.setCurX(25);
+            customer.setCurY(25);
             customer.setIfLogin(0);
 //            customer.setRequestOrder(new RequestOrder());
 //            customer.setOrderList(new ArrayList<>());
-            System.out.println("\n\n\n\n\n\n\n custmoer" + customer + "----------------------------");
+//            System.out.println("\n\n\n\n\n\n\n custmoer" + customer + "----------------------------");
+            Long id = customerRepository.save(customer).getId();
 
-            customerRepository.save(customer);
+
+            RequestOrder requestOrder = new RequestOrder();
+            requestOrder.setCustomer(customerRepository.findByCustomerName(customerName));
+            requestOrder.setCustomerName(customerName);
+            requestOrder.setStartTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
+            requestOrder.setCurX(customer.getCurX());
+            requestOrder.setCurY(customer.getCurY());
+            requestOrder.setIfCheck(1);
+            requestOrder.setPriority(0);
+            requestOrder.setDriverName("");
+            requestOrderRepository.save(requestOrder);
             return "注册成功";
         } else {
             System.out.println("用户名已存在，请重新注册");
@@ -166,15 +177,17 @@ public class CustomerController {
 //    }
 
     @GetMapping("/Hailing")
-    public String userHailing(String customerName, RequestOrder requestOrder) {
+    public String userHailing(String customerName,int desX, int desY,int serviceLevel) {
 //        boolean flag = CustomerService.CustomerHailing(username,requestOrder);
         Customer customer = customerRepository.findByCustomerName(customerName);
 //        if (CustomerService.CustomerHailing(customerName, requestOrder))
         //确定区域
+
         int tempX = customer.getCurX();
         int tempY = customer.getCurY();
-        int sectorId = (tempY % 3) * 17 + tempX % 3;
-        List<Integer> sectorList = Arrays.asList(sectorId);
+        int sectorId = (tempY / 3) * 17 + tempX / 3;
+        List<Integer> sectorList = new ArrayList<>();
+        sectorList.add(sectorId);
 
         if (tempX / 3 == 0) {//最左一列区域
             if (tempY / 3 == 0) {
@@ -233,33 +246,36 @@ public class CustomerController {
             }
         }
 
-        // 如果还未请求过订单 生成订单 不然直接寻找司机
-        if (requestOrderRepository.findByCustomerName(customerName) == null) {
-            List<RequestOrder> requestOrderList = (List<RequestOrder>) requestOrderRepository.findAll();
-            int x = requestOrderList.size();
-            requestOrder.setCustomer(customerRepository.findByCustomerName(customerName));
-            requestOrder.setCustomerName(customerName);
-            requestOrder.setStartTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
-            requestOrder.setCurX(customer.getCurX());
-            requestOrder.setCurY(customer.getCurY());
-            requestOrder.setIfCheck(0);
-            requestOrder.setPriority(0);
-            requestOrder.setDriverName("");
-            requestOrder.setDriver(new Driver());
-            // 目的地 服务等级 由 用户在前端通过参数发送
-        }
+        RequestOrder requestOrder = requestOrderRepository.findByCustomerName(customerName);
         //找司机
+        requestOrder.setCurX(customer.getCurX());
+        requestOrder.setCurY(customer.getCurY());
+        requestOrder.setDesX(desX);
+        requestOrder.setDesY(desY);
+        requestOrder.setIfCheck(0);
         requestOrder.setPriority(requestOrder.getPriority() + 1);
         int freeCnt = 0;
         for (int i = 0; i < sectorList.size(); ++i) {
             List<Area> areaList = areaRepository.findBySectorId(sectorList.get(i));
             for (int j = 0; j < areaList.size(); ++j) {
-                Driver driver = driverRepository.findById((long) areaList.get(i).getDriverId()).orElse(null);
+                Driver driver = driverRepository.findById((long) areaList.get(j).getDriverId()).orElse(null);
                 if (driver != null) {
                     if (driver.getIfBusy() == 0) {
                         freeCnt += 1;
                     }
-                    driver.getRequestOrderList().add(requestOrder);
+                    if(driver.getRequestOrderList() == null)
+                    {
+                        List<RequestOrder> tempOrder = new ArrayList<RequestOrder>();
+                        tempOrder.add(requestOrder);
+                        driver.setRequestOrderList(tempOrder);
+                    }
+                    else {
+                        driver.getRequestOrderList().add(requestOrder);
+                    }
+//                    System.out.println("-----------------");
+//                    System.out.println(driver);
+//                    System.out.println("-----------------");
+                    driverRepository.save(driver);
                     if (freeCnt >= 5) break;
                 }
             }
@@ -268,21 +284,17 @@ public class CustomerController {
 
         if (requestOrder.getPriority() >= 100) {
             List<Driver> driverList = (List<Driver>) driverRepository.findAll();
-            for (int i = 0; i < driverList.size(); ++i) {
-                Driver tempDriver = driverList.get(i);
+            for (Driver tempDriver : driverList) {
                 if (tempDriver.getIfBusy() == 0) {
-                    int difx = Math.abs(tempDriver.getCurX() - customer.getCurX());
-                    int dify = Math.abs(tempDriver.getCurY() - customer.getCurY());
                     tempDriver.getRequestOrderList().add(requestOrder);
                     driverRepository.save(tempDriver);
                 }
             }
             requestOrder.setPriority(0);
         }
-
-
         requestOrderRepository.save(requestOrder);
-        return "正在为您寻找司机，请耐心等候";
+
+        return "正在为您寻找司机，请耐心等候!!!!!";
     }
 
     @GetMapping("/Cancel")
@@ -302,49 +314,66 @@ public class CustomerController {
     }
 
     // 有司机接单
-    @GetMapping("/takeOrder")
-    public String takeOrder(String username, RequestOrder requestOrder) {
-        //后端向前端发送消息推送
-        if (requestOrderRepository.findByCustomerName(username).getIfCheck() == 1) {
-            return "预测还有 " + " 公里 约 " + " 分钟到达";
-        }
-        return "请耐心等待";
-
-    }
+//    @GetMapping("/takeOrder")
+//    public String takeOrder(String username, RequestOrder requestOrder) {
+//        //后端向前端发送消息推送
+//        if (requestOrderRepository.findByCustomerName(username).getIfCheck() == 1) {
+//            return "预测还有 " + " 公里 约 " + " 分钟到达";
+//        }
+//        return "请耐心等待";
+//
+//    }
 
     @RequestMapping("/finishOrder")
-    public String finshOrder(String username, String content, int commentLevel) {
+    public String finshOrder(String customerName, String content, int commentLevel) {
         //用户付钱 完成订单
         //更新用户信息
-        Customer customer = customerRepository.findByCustomerName(username);
-        Driver driver = driverRepository.findByCurCustomerName(username);
-//        Order order = orderRepository.findById(driver.getCurOrderId()).orElse(null); TODO
-        OrderForCustomer order = orderForCustomerRepository.findById(driver.getCurOrderId()).orElse(null);
-
+        Customer customer = customerRepository.findByCustomerName(customerName);
+        if(customer!=null)
+        {
+            Driver driver = driverRepository.findByCurCustomerName(customerName);
+            if(driver!=null)
+            {
+                OrderForUser order = orderForUserRepository.findById(driver.getCurOrderId()).orElse(null);
+                if(order != null && order.getCustomerName().equals(customerName))
+                {
 //        Comment comment = new Comment(content, commentLevel);
-        Comment comment = new Comment();
-        customer.setTakeCount(customer.getTakeCount() + 1);
-        customer.setTakeDistance(customer.getTakeDistance() + order.getDistance()); //TODO
-        customerRepository.save(customer);
+                    Comment comment = new Comment();
+                    customer.setTakeCount(customer.getTakeCount() + 1);
+                    customer.setTakeDistance(customer.getTakeDistance() + order.getDistance()); //TODO
+                    customer.setCurX(order.getDesX());
+                    customer.setCurY(order.getDesY());
 
-        //更新 订单 及评论信息
-        order.setCurState(1); //TODO
-        if (content == null) {
-            comment.setContent("默认五星好评");
-        } else {
-            comment.setContent(content);
-            comment.setCommentLevel(commentLevel);
+                    customerRepository.save(customer);
+                    //更新 订单 及评论信息
+
+                    driver.setCurOrderId((long) -1);
+                    driver.setIfBusy(0);
+                    driver.setFinishCount(driver.getFinishCount() + 1);
+//                    driver.setFinishDistance(driver.getFinishCount() + order.getDistance());
+
+                    order.setCurState(1); //TODO
+                    if (content == null) {
+                        comment.setContent("默认五星好评");
+                    } else {
+                        comment.setContent(content);
+                        comment.setCommentLevel(commentLevel);
+                    }
+                    driver.setStars((commentLevel + driver.getStars() * driver.getFinishCount()) / driver.getFinishCount());
+//        orderForCustomerRepository.save(order);//TODO
+//        OrderForDriver tempOrder = orderForDriverRepository.findById(order.getOrderForDriver().getId()).orElse(null);
+//        orderForDriverRepository.save(tempOrder);//TODO
+                    orderForUserRepository.save(order);
+                    commentRepository.save(comment);
+                    driverRepository.save(driver);
+                    return "祝您生活愉快";
+                }
+            }
         }
-        driver.setStars((commentLevel + driver.getStars() * driver.getFinishCount()) / driver.getFinishCount() + 1);
+//        Order order = orderRepository.findById(driver.getCurOrderId()).orElse(null); TODO
+//        OrderForCustomer order = orderForCustomerRepository.findById(driver.getCurOrderId()).orElse(null);
 
-        orderForCustomerRepository.save(order);//TODO
-        OrderForDriver tempOrder = orderForDriverRepository.findById(order.getOrderForDriver().getId()).orElse(null);
-        orderForDriverRepository.save(tempOrder);//TODO
-
-        commentRepository.save(comment);
-        driverRepository.save(driver);
-
-        return "祝您生活愉快";
+        return "误操作，请查看接口是否正确，或是否已经完成操作";
     }
 
     @GetMapping("/search")

@@ -13,14 +13,14 @@ public class Driver {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "driver_id")
+//    @ManyToMany(fetch = FetchType.EAGER)
+//    @JoinTable(name="driver_rOrder",joinColumns = {@JoinColumn(name = "d_id")},inverseJoinColumns = {@JoinColumn(name = "r_id")})
+    @ManyToMany(cascade = {CascadeType.REFRESH},fetch = FetchType.EAGER)
     private List<RequestOrder> requestOrderList;
 //    private List<RequestOrder> requestOrderList = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL)//TODO
-    @JoinColumn(name = "driver_id")
-    private List<OrderForDriver> orderForDriverList;
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<OrderForUser> orderForUserList;
 //    @JoinColumn(name = "driver_id")
 
 //    private List<Order> orderList = new ArrayList<>();

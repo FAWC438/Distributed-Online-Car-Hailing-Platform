@@ -3,6 +3,7 @@ package distributed.sys.customer.entity;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Data
 @Entity
@@ -11,6 +12,7 @@ public class RequestOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+//    private long cId;
     private String customerName;
     private String startTime;
     private String driverName;
@@ -25,8 +27,11 @@ public class RequestOrder {
     @OneToOne(cascade = CascadeType.ALL)
     private Customer customer;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Driver driver;
+    @ManyToMany(fetch = FetchType.EAGER)
+    private List<Driver> driver;
+//    @JoinTable(name="driver_requestOrder",joinColumns = {@JoinColumn(name = "r_id")},inverseJoinColumns = {@JoinColumn(name = "d_id")})
+//    @ManyToMany(cascade = {CascadeType.REFRESH},fetch = FetchType.EAGER)
+
 
 //    private double curX;
 //    private double curY;

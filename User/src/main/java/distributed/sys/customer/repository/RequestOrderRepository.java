@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 public interface RequestOrderRepository extends CrudRepository<RequestOrder,Long>{
 //    List<OrderRepository> findByStartTime(String st);
     RequestOrder findByCustomerName(String customerName);
+    RequestOrder findByCustomerId(Long customerId);
 }
