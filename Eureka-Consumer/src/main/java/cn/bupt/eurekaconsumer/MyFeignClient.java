@@ -11,5 +11,5 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @FeignClient(name = "provider")
 public interface MyFeignClient {
     @RequestMapping(value = "/hello")
-    public String hello();
+    String hello();
 }
