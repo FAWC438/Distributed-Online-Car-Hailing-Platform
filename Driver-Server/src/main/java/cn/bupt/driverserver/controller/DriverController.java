@@ -6,9 +6,11 @@ import cn.bupt.driverserver.entity.Views;
 import cn.bupt.driverserver.facade.HailingFeignClient;
 import cn.bupt.driverserver.repository.AreaRepository;
 import cn.bupt.driverserver.repository.DriverRepository;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,8 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 
 
+@RefreshScope
 @RestController
-@RequestMapping("/user/driver")
 public class DriverController {
 
     final DriverRepository driverRepository;
@@ -33,6 +35,7 @@ public class DriverController {
     }
 
     @GetMapping("/")
+    @SentinelResource
     public String index() {
         return "login";
     }
@@ -51,6 +54,7 @@ public class DriverController {
     }
 
     @RequestMapping("/login")
+    @SentinelResource
     public String login(HttpServletRequest request) {
         String driverName = request.getParameter("driverName");
         String password = request.getParameter("password");
@@ -75,6 +79,7 @@ public class DriverController {
     }
 
     @RequestMapping("/logout")
+    @SentinelResource
     public String logout(String driverName) {
         Driver driver = driverRepository.findByDriverName(driverName);
         driver.setIfLogin(0);
@@ -83,6 +88,7 @@ public class DriverController {
     }
 
     @RequestMapping("/register")
+    @SentinelResource
     public String register(String driverName, int curX, int curY) {
         if (driverRepository.findByDriverName(driverName) == null) {
             Driver driver = new Driver();
@@ -120,6 +126,7 @@ public class DriverController {
     }
 
     @RequestMapping("/edit")
+    @SentinelResource
     public String edit(String driverName, int serviceLevel) {
         Driver driver = driverRepository.findByDriverName(driverName);
         driver.setServiceLevel(serviceLevel);
@@ -128,6 +135,7 @@ public class DriverController {
     }
 
     @RequestMapping("/index")//初始页面 暂时返回视图
+    @SentinelResource
     @JsonView(Views.Public.class)
     public Driver index(String driverName) {
         return driverRepository.findByDriverName(driverName);
@@ -135,24 +143,34 @@ public class DriverController {
 
 
     @RequestMapping("/updateDriver")
+    @SentinelResource
     public String updateDriver(String driverName) {
         return hailingFeignClient.updateDriver(driverName);
     }
 
 
     @RequestMapping("/handleRequestOrder")
+    @SentinelResource
     public String handleRequestOrder(String driverName, int orderNum) {
         return hailingFeignClient.handleRequestOrder(driverName, orderNum);
     }
 
     @RequestMapping("/takeCustomer")
+    @SentinelResource
     public String takeCustomer(String driverName) {
         return hailingFeignClient.takeCustomer(driverName);
     }
 
     @RequestMapping("/finishOrder")
+    @SentinelResource
     public String finishOrder(String driverName) {
         return hailingFeignClient.finishOrder(driverName);
+    }
+
+    @GetMapping("/searchOrder")
+    @SentinelResource
+    public String searchOrder(String driverName) {
+        return hailingFeignClient.searchOrder(driverName);
     }
 }
 

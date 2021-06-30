@@ -4,8 +4,11 @@ package cn.bupt.userhailingserver.controller;
 
 import cn.bupt.userhailingserver.entity.*;
 import cn.bupt.userhailingserver.repository.*;
+import cn.bupt.userhailingserver.service.*;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,30 +21,39 @@ import java.util.List;
 
 //@Tag(name = "乘车用户接口")
 //@RequestMapping("/user/customer")
+@RefreshScope
 @RestController
 public class CustomerController {
     final CommentRepository commentRepository;
     final OrderForUserRepository orderForUserRepository;
-    final OrderForCustomerRepository orderForCustomerRepository;
-    final OrderForDriverRepository orderForDriverRepository;
     final DriverRepository driverRepository;
     final RequestOrderRepository requestOrderRepository;
-    //    final OrderRepository orderRepository;
     final CustomerRepository customerRepository;
     final AreaRepository areaRepository;
 
+    final AreaService areaService;
+    final CustomerService customerService;
+    final DriverService driverService;
+    final OrderForUserService orderForUserService;
+    final RequestOrderService requestOrderService;
 
     @Autowired
-    public CustomerController(CommentRepository commentRepository, DriverRepository driverRepository, OrderForDriverRepository orderForDriverRepository, OrderForCustomerRepository orderForCustomerRepository
-            , RequestOrderRepository requestOrderRepository, OrderForUserRepository orderForUserRepository, CustomerRepository customerRepository, AreaRepository areaRepository) {
+    public CustomerController(CommentRepository commentRepository, DriverRepository driverRepository, RequestOrderRepository requestOrderRepository,
+                              OrderForUserRepository orderForUserRepository, CustomerRepository customerRepository, AreaRepository areaRepository,
+                              AreaService areaService, CustomerService customerService, DriverService driverService, OrderForUserService orderForUserService,
+                              RequestOrderService requestOrderService) {
         this.commentRepository = commentRepository;
         this.orderForUserRepository = orderForUserRepository;
-        this.orderForCustomerRepository = orderForCustomerRepository;
-        this.orderForDriverRepository = orderForDriverRepository;
         this.driverRepository = driverRepository;
         this.requestOrderRepository = requestOrderRepository;
         this.customerRepository = customerRepository;
         this.areaRepository = areaRepository;
+
+        this.areaService = areaService;
+        this.customerService = customerService;
+        this.driverService = driverService;
+        this.orderForUserService = orderForUserService;
+        this.requestOrderService = requestOrderService;
     }
 
     @Value("${eureka.instance.hostname}")
@@ -58,9 +70,10 @@ public class CustomerController {
     }
 
     @GetMapping("/Hailing")
-    public String userHailing(String customerName, int desX, int desY, int serviceLevel) {
+    @SentinelResource
+    public String userHailing(String customerName, int desX, int desY) {
 //        boolean flag = CustomerService.CustomerHailing(username,requestOrder);
-        Customer customer = customerRepository.findByCustomerName(customerName);
+        Customer customer = customerService.findByCustomerName(customerName);
 //        if (CustomerService.CustomerHailing(customerName, requestOrder))
         //确定区域
 
@@ -127,7 +140,7 @@ public class CustomerController {
             }
         }
 
-        RequestOrder requestOrder = requestOrderRepository.findByCustomerName(customerName);
+        RequestOrder requestOrder = requestOrderService.findByCustomerName(customerName);
         //找司机
         requestOrder.setCurX(customer.getCurX());
         requestOrder.setCurY(customer.getCurY());
@@ -136,8 +149,32 @@ public class CustomerController {
         requestOrder.setIfCheck(0);
         requestOrder.setPriority(requestOrder.getPriority() + 1);
         int freeCnt = 0;
+//        for (Integer integer : sectorList) {
+//            List<Area> areaList = areaRepository.findBySectorId(integer);
+//            for (Area area : areaList) {
+//                Driver driver = driverRepository.findById(area.getDriverId()).orElse(null);
+//                if (driver != null) {
+//                    if (driver.getIfBusy() == 0) {
+//                        freeCnt += 1;
+//                    }
+//                    if (driver.getRequestOrderList() == null) {
+//                        List<RequestOrder> tempOrder = new ArrayList<>();
+//                        tempOrder.add(requestOrder);
+//                        driver.setRequestOrderList(tempOrder);
+//                    } else {
+//                        driver.getRequestOrderList().add(requestOrder);
+//                    }
+////                    System.out.println("-----------------");
+////                    System.out.println(driver);
+////                    System.out.println("-----------------");
+//                    driverRepository.save(driver);
+//                    if (freeCnt >= 5) break;
+//                }
+//            }
+//            if (freeCnt >= 5) break;
+//        }
         for (Integer integer : sectorList) {
-            List<Area> areaList = areaRepository.findBySectorId(integer);
+            List<Area> areaList = areaService.findBySectorId(integer);
             for (Area area : areaList) {
                 Driver driver = driverRepository.findById(area.getDriverId()).orElse(null);
                 if (driver != null) {
@@ -149,7 +186,17 @@ public class CustomerController {
                         tempOrder.add(requestOrder);
                         driver.setRequestOrderList(tempOrder);
                     } else {
-                        driver.getRequestOrderList().add(requestOrder);
+                        List<RequestOrder> requestOrderList = driver.getRequestOrderList();
+                        int flag = 0;
+                        for (RequestOrder order : requestOrderList) {
+                            if (order.getCustomerName().equals(customerName)) {
+                                flag = 1;
+                                break;
+                            }
+                        }
+                        if (flag == 0) {
+                            driver.getRequestOrderList().add(requestOrder);
+                        }
                     }
 //                    System.out.println("-----------------");
 //                    System.out.println(driver);
@@ -160,6 +207,7 @@ public class CustomerController {
             }
             if (freeCnt >= 5) break;
         }
+
 
         if (requestOrder.getPriority() >= 100) {
             List<Driver> driverList = (List<Driver>) driverRepository.findAll();
@@ -177,14 +225,15 @@ public class CustomerController {
     }
 
     @GetMapping("/Cancel")
+    @SentinelResource
     public String userCancel(String customerName) {
 //        if (CustomerService.CustomerHailing(username, requestOrder))
-        if (requestOrderRepository.findByCustomerName(customerName) == null) {
+        if (requestOrderService.findByCustomerName(customerName) == null) {
             //取消该订单
-            if (requestOrderRepository.findByCustomerName(customerName).getIfCheck() == 1) {
+            if (requestOrderService.findByCustomerName(customerName).getIfCheck() == 1) {
                 return "司机马上赶来，请等待";
             } else {
-                RequestOrder requestOrder = requestOrderRepository.findByCustomerName(customerName);
+                RequestOrder requestOrder = requestOrderService.findByCustomerName(customerName);
 //                requestOrderRepository.deleteById(requestOrder.getId());
                 requestOrder.setIfCheck(1);
                 requestOrder.setPriority(0);
@@ -210,12 +259,13 @@ public class CustomerController {
 //    }
 
     @RequestMapping("/finishOrder")
+    @SentinelResource
     public String finishOrder(String customerName, String content, int commentLevel) {
         //用户付钱 完成订单
         //更新用户信息
-        Customer customer = customerRepository.findByCustomerName(customerName);
+        Customer customer = customerService.findByCustomerName(customerName);
         if (customer != null) {
-            Driver driver = driverRepository.findByCurCustomerName(customerName);
+            Driver driver = driverService.findByCurCustomerName(customerName);
             if (driver != null) {
                 OrderForUser order = orderForUserRepository.findById(driver.getCurOrderId()).orElse(null);
                 if (order != null && order.getCustomerName().equals(customerName)) {
@@ -258,9 +308,10 @@ public class CustomerController {
         return "误操作，请查看接口是否正确，或是否已经完成操作";
     }
 
-    @GetMapping("/search")
+    @GetMapping("/searchDriver")
+    @SentinelResource
     public String searchDriver(String driverName) {
-        Driver driver = driverRepository.findByDriverName(driverName);
+        Driver driver = driverService.findByDriverName(driverName);
         StringBuilder retStr = new StringBuilder("Driver:" + driver.getDriverName() + "\n");
         retStr.append("Service Level:").append(driver.getServiceLevel()).append("\n");
         retStr.append("Driver Level:").append(driver.getDriverLevel()).append("\n");
@@ -272,4 +323,17 @@ public class CustomerController {
         return retStr.toString();
     }
 
+
+    @GetMapping("/searchOrder")
+    @SentinelResource
+    public String searchOrder(String customerName) {
+        Customer customer = customerService.findByCustomerName(customerName);
+        List<OrderForUser> orderList = orderForUserService.findByCustomerName(customerName);
+        StringBuilder retStr = new StringBuilder();
+        for (OrderForUser orderForUser : orderList) {
+            retStr.append("Order0:").append(orderForUser.toString()).append("\n");
+            System.out.println("Order0:" + orderForUser);
+        }
+        return retStr.toString();
+    }
 }

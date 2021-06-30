@@ -4,10 +4,11 @@ package cn.bupt.userhailingserver.entity;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Data
 @Entity
-public class OrderForUser {
+public class OrderForUser implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;

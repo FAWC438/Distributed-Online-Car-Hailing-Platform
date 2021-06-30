@@ -18,4 +18,7 @@ public interface HailingFeignClient {
 
     @RequestMapping("/finishOrder")
     String finishOrder(@RequestParam("driverName") String driverName);
+
+    @GetMapping("/searchOrder")
+    String searchOrder(String driverName);
 }

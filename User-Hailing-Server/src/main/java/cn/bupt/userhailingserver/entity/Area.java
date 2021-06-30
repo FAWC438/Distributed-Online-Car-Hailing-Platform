@@ -4,12 +4,13 @@ package cn.bupt.userhailingserver.entity;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 
 @Data
 @Entity
 @Table(indexes = {@Index(columnList = "sectorId")})
-public class Area{
+public class Area implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;

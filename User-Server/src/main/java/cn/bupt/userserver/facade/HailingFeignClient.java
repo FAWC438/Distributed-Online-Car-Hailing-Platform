@@ -1,6 +1,7 @@
 package cn.bupt.userserver.facade;
 
 import cn.bupt.userserver.entity.RequestOrder;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface HailingFeignClient {
     @GetMapping("/Hailing")
     String userHailing(@RequestParam("customerName") String customerName, @RequestParam("desX") int desX,
-                       @RequestParam("desY") int desY, @RequestParam("serviceLevel") int serviceLevel);
+                       @RequestParam("desY") int desY);
 
     @GetMapping("/Cancel")
     String userCancel(String username);
@@ -20,6 +21,9 @@ public interface HailingFeignClient {
     String finishOrder(@RequestParam("customerName") String customerName, @RequestParam("content") String content,
                        @RequestParam("commentLevel") int commentLevel);
 
-    @GetMapping("/search")
+    @GetMapping("/searchDriver")
     String searchDriver(String driverName);
+
+    @GetMapping("/searchOrder")
+    String searchOrder(String customerName);
 }

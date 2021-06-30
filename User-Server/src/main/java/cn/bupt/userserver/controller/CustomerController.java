@@ -6,8 +6,10 @@ import cn.bupt.userserver.entity.Customer;
 import cn.bupt.userserver.entity.RequestOrder;
 import cn.bupt.userserver.facade.HailingFeignClient;
 import cn.bupt.userserver.repository.*;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,8 +19,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 //@Tag(name = "乘车用户接口")
+@RefreshScope
 @RestController
-@RequestMapping("/user/customer")
 public class CustomerController {
 
     final RequestOrderRepository requestOrderRepository;
@@ -35,8 +37,9 @@ public class CustomerController {
 
 
     @GetMapping("/")
+    @SentinelResource
     public String index() {
-        return "login";
+        return "欢迎";
     }
 
     @Value("${eureka.instance.hostname}")
@@ -53,6 +56,7 @@ public class CustomerController {
     }
 
     @RequestMapping("/login")
+    @SentinelResource
     public String login(HttpServletRequest request) {
         String customerName = request.getParameter("customerName");
         String password = request.getParameter("password");
@@ -88,6 +92,7 @@ public class CustomerController {
     }
 
     @RequestMapping("/logout")
+    @SentinelResource
     public String logout(String customerName) {
         Customer customer = customerRepository.findByCustomerName(customerName);
         customer.setIfLogin(0);
@@ -99,6 +104,7 @@ public class CustomerController {
 
     //    public String register(Customer customer)
     @RequestMapping("/register")
+    @SentinelResource
     public String register(String customerName, String password, String email) {
         Customer customer = new Customer();
         if (customerRepository.findByCustomerName(customerName) == null) {
@@ -141,8 +147,9 @@ public class CustomerController {
 //        Customer customer = customerRepository.findByCustomerName(userName);
 //        String retStr = customer.getCustomerName()
 //    }
+    //    @JsonView(Views.Public.class)
     @GetMapping("/index")//初始页面 暂时返回视图
-//    @JsonView(Views.Public.class)
+    @SentinelResource
     public String indexView(String username) {
         Customer customer = customerRepository.findByCustomerName(username);
         System.out.println(customer);
@@ -150,6 +157,7 @@ public class CustomerController {
     }
 
     @RequestMapping("/updateCustomer")
+    @SentinelResource
     public String updateCustomer(String customerName, int curX, int curY) {
         Customer customer = customerRepository.findByCustomerName(customerName);
         //获取当前位置
@@ -180,23 +188,32 @@ public class CustomerController {
 //    }
 
     @GetMapping("/Hailing")
-    public String userHailing(String customerName, int desX, int desY, int serviceLevel) {
-        return hailingFeignClient.userHailing(customerName, desX, desY, serviceLevel);
+    @SentinelResource
+    public String userHailing(String customerName, int desX, int desY) {
+        return hailingFeignClient.userHailing(customerName, desX, desY);
     }
 
     @GetMapping("/Cancel")
+    @SentinelResource
     public String userCancel(String username) {
         return hailingFeignClient.userCancel(username);
     }
 
 
     @RequestMapping("/finishOrder")
+    @SentinelResource
     public String finishOrder(String customerName, String content, int commentLevel) {
         return hailingFeignClient.finishOrder(customerName, content, commentLevel);
     }
 
-    @GetMapping("/search")
+    @GetMapping("/searchDriver")
+    @SentinelResource
     public String searchDriver(String driverName) {
         return hailingFeignClient.searchDriver(driverName);
+    }
+
+    @GetMapping("/searchOrder")
+    public String searchOrder(String customerName) {
+        return hailingFeignClient.searchOrder(customerName);
     }
 }

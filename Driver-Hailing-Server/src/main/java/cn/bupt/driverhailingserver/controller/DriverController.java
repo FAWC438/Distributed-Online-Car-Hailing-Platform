@@ -3,14 +3,15 @@ package cn.bupt.driverhailingserver.controller;
 import cn.bupt.driverhailingserver.entity.*;
 import cn.bupt.driverhailingserver.repository.*;
 import cn.bupt.driverhailingserver.server.WebSocketServer;
-import com.fasterxml.jackson.annotation.JsonView;
+import cn.bupt.driverhailingserver.service.*;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -19,31 +20,38 @@ import java.util.List;
 
 
 //@RequestMapping("/user/driver")
+@RefreshScope
 @RestController
 public class DriverController {
     final CommentRepository commentRepository;
     final OrderForUserRepository orderForUserRepository;
-    final OrderForCustomerRepository orderForCustomerRepository;
-    final OrderForDriverRepository orderForDriverRepository;
     final DriverRepository driverRepository;
     final RequestOrderRepository requestOrderRepository;
-    //    final OrderRepository orderRepository;
     final CustomerRepository customerRepository;
     final AreaRepository areaRepository;
+    final AreaService areaService;
+    final CustomerService customerService;
+    final DriverService driverService;
+    final OrderForUserService orderForUserService;
 
 
     @Autowired
-    public DriverController(CommentRepository commentRepository, DriverRepository driverRepository, OrderForDriverRepository orderForDriverRepository, OrderForCustomerRepository orderForCustomerRepository
-            , RequestOrderRepository requestOrderRepository, OrderForUserRepository orderForUserRepository, CustomerRepository customerRepository, AreaRepository areaRepository) {
+    public DriverController(CommentRepository commentRepository, DriverRepository driverRepository, RequestOrderRepository requestOrderRepository,
+                            OrderForUserRepository orderForUserRepository, CustomerRepository customerRepository, AreaRepository areaRepository,
+                            AreaService areaService, CustomerService customerService, DriverService driverService, OrderForUserService orderForUserService) {
         this.commentRepository = commentRepository;
         this.orderForUserRepository = orderForUserRepository;
-        this.orderForCustomerRepository = orderForCustomerRepository;
-        this.orderForDriverRepository = orderForDriverRepository;
         this.driverRepository = driverRepository;
         this.requestOrderRepository = requestOrderRepository;
         this.customerRepository = customerRepository;
         this.areaRepository = areaRepository;
+
+        this.areaService = areaService;
+        this.customerService = customerService;
+        this.driverService = driverService;
+        this.orderForUserService = orderForUserService;
     }
+
 
     @Value("${eureka.instance.hostname}")
     private String name;
@@ -60,8 +68,10 @@ public class DriverController {
 
 
     @RequestMapping("/updateDriver")
+    @SentinelResource
     public String updateDriver(String driverName) {
-        Driver driver = driverRepository.findByDriverName(driverName);
+        System.out.println("updateDriver: " + driverName);
+        Driver driver = driverService.findByDriverName(driverName);
 
         //暂定市中心人最多，司机们都住在那附近，因此在空闲状态司机将会前往市中心
         //城市大小50km * 50km, 每1km有一个检测点
@@ -103,7 +113,7 @@ public class DriverController {
                 driver.getRequestOrderList().remove(requestOrder);
             }
         }
-        Area area = areaRepository.findByDriverId(driver.getId());
+        Area area = areaService.findByDriverId(driver.getId());
         if (driver.getIfBusy() == 1) {
             //        area.setDriverId(driverRepository.findByDriverName(driver.getDriverName()).getId());
             area.setSectorId((driver.getDesY() / 3) * 17 + driver.getDesX() / 3);
@@ -120,8 +130,9 @@ public class DriverController {
 
 
     @RequestMapping("/handleRequestOrder")
+    @SentinelResource
     public String handleRequestOrder(String driverName, int orderNum) {
-        Driver driver = driverRepository.findByDriverName(driverName);
+        Driver driver = driverService.findByDriverName(driverName);
         if (driver.getRequestOrderList() != null)//如果有订单请求
         {
             List<RequestOrder> driverRequestOrders = driver.getRequestOrderList();
@@ -176,12 +187,13 @@ public class DriverController {
     }
 
     @RequestMapping("/takeCustomer")
+    @SentinelResource
     public String takeCustomer(String driverName) {
-        Driver driver = driverRepository.findByDriverName(driverName);
+        Driver driver = driverService.findByDriverName(driverName);
         // TODO：需要删除MANYTOMANY关系 不然获取不到正确用户信息
         RequestOrder requestOrder = driver.getRequestOrderList().get(0);
 
-        Customer customer = customerRepository.findByCustomerName(requestOrder.getCustomerName());
+        Customer customer = customerService.findByCustomerName(requestOrder.getCustomerName());
 //        Order order = new Order();TODO
 //        OrderForDriver order= new OrderForDriver();
         OrderForUser order = new OrderForUser();
@@ -225,11 +237,12 @@ public class DriverController {
     }
 
     @RequestMapping("/finishOrder")
+    @SentinelResource
     public String finishOrder(String driverName) {
-        Driver driver = driverRepository.findByDriverName(driverName);
+        Driver driver = driverService.findByDriverName(driverName);
 //        OrderForUser order  = driver.getCurOrder();
 //        String orderId = driver.getCurOrderId();
-        OrderForUser order = orderForUserRepository.findById(driver.getCurOrderId()).orElse(null);//TODO
+        OrderForUser order = orderForUserService.findById(driver.getCurOrderId());//TODO
         // 更新order 信息
         if (order == null) {
             return "乘客已送达";
@@ -251,7 +264,7 @@ public class DriverController {
         driver.setDesX(25);
         driver.setDesY(25);
 
-        Area area = areaRepository.findByDriverId(driver.getId());
+        Area area = areaService.findByDriverId(driver.getId());
 //        area.setDriverId(driverRepository.findByDriverName(driver.getDriverName()).getId());
         area.setSectorId((driver.getDesY() / 3) * 17 + driver.getDesX() / 3);
         areaRepository.save(area);
@@ -260,5 +273,18 @@ public class DriverController {
         return "乘客已送达";
     }
 
+    @GetMapping("/searchOrder")
+    @SentinelResource
+    public String searchOrder(String driverName) {
+//        Customer customer =customerRepository.findByCustomerName(customerName);
+        Driver driver = driverService.findByDriverName(driverName);
+        List<OrderForUser> orderList = orderForUserService.findByDriverName(driverName);
+        StringBuilder retStr = new StringBuilder();
+        for (OrderForUser orderForUser : orderList) {
+            retStr.append("Order0:").append(orderForUser.toString()).append("\n");
+            System.out.println("Order0:" + orderForUser.toString());
+        }
+        return retStr.toString();
+    }
 }
 

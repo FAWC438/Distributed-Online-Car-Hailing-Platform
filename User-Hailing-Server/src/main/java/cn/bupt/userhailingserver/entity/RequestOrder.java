@@ -3,16 +3,17 @@ package cn.bupt.userhailingserver.entity;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.List;
 
 @Data
 @Entity
-public class RequestOrder {
+public class RequestOrder implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-//    private long cId;
+    //    private long cId;
     private String customerName;
     private String startTime;
     private String driverName;
