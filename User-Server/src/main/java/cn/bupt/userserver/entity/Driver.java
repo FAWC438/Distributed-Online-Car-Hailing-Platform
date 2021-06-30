@@ -4,35 +4,38 @@ import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.List;
 
 @Data
 @Entity
-public class Driver {
+public class Driver implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-//    @ManyToMany(fetch = FetchType.EAGER)
+    //    @ManyToMany(fetch = FetchType.EAGER)
 //    @JoinTable(name="driver_rOrder",joinColumns = {@JoinColumn(name = "d_id")},inverseJoinColumns = {@JoinColumn(name = "r_id")})
-    @ManyToMany(cascade = {CascadeType.REFRESH},fetch = FetchType.EAGER)
-    private List<RequestOrder> requestOrderList;
+//    @ManyToMany(cascade = {CascadeType.REFRESH}, fetch = FetchType.EAGER)
+//    private List<RequestOrder> requestOrderList;
 //    private List<RequestOrder> requestOrderList = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<OrderForUser> orderForUserList;
-//    @JoinColumn(name = "driver_id")
+    //    @JoinColumn(name = "driver_id")
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<RequestOrderForDriver> requestOrderForDriverList;
 
 //    private List<Order> orderList = new ArrayList<>();
 
-    @OneToMany(cascade =  CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "driver_id")
     private List<Comment> commentList;
 //    private List<Comment> commentList = new ArrayList<>();
 
     private int ifLogin;
-//    private Order curOrder;
-    private  Long curOrderId;
+    //    private Order curOrder;
+    private Long curOrderId;
     private String curCustomerName;
 
     @JsonView(Views.Public.class)
@@ -53,7 +56,7 @@ public class Driver {
     private int serviceLevel;
     @JsonView(Views.Public.class)
     private int driverPoint;
-//    @JsonView(Views.Public.class)
+    //    @JsonView(Views.Public.class)
 //    private int driverDistance;
     @JsonView(Views.Public.class)
     private int driverLevel;

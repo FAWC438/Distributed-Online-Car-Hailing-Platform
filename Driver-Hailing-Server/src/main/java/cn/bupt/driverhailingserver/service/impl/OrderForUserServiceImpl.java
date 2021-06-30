@@ -19,8 +19,9 @@ public class OrderForUserServiceImpl implements OrderForUserService {
         this.orderForUserRepository = orderForUserRepository;
     }
 
+
+    //    @Cacheable(value = "order_id", key = "#p0", condition = "#p0!=null", unless = "#result == null")
     @Override
-    @Cacheable(value = "order_id", key = "#p0", condition = "#p0!=null", unless = "#result == null")
     public OrderForUser findById(Long id) {
         return orderForUserRepository.findById(id).orElse(null);
     }

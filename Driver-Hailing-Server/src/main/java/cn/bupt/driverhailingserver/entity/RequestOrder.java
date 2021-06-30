@@ -28,8 +28,8 @@ public class RequestOrder implements Serializable {
     @OneToOne(cascade = CascadeType.ALL)
     private Customer customer;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    private List<Driver> driver;
+//    @ManyToMany(fetch = FetchType.EAGER)
+//    private List<Driver> driver;
 //    @JoinTable(name="driver_requestOrder",joinColumns = {@JoinColumn(name = "r_id")},inverseJoinColumns = {@JoinColumn(name = "d_id")})
 //    @ManyToMany(cascade = {CascadeType.REFRESH},fetch = FetchType.EAGER)
 

@@ -1,6 +1,7 @@
 package cn.bupt.driverhailingserver.controller;
 
 import cn.bupt.driverhailingserver.entity.*;
+import cn.bupt.driverhailingserver.entity.RequestOrderForDriver;
 import cn.bupt.driverhailingserver.repository.*;
 import cn.bupt.driverhailingserver.server.WebSocketServer;
 import cn.bupt.driverhailingserver.service.*;
@@ -17,12 +18,14 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 //@RequestMapping("/user/driver")
 @RefreshScope
 @RestController
 public class DriverController {
+    final RequestOrderForDriverRepository requestOrderForDriverRepository;
     final CommentRepository commentRepository;
     final OrderForUserRepository orderForUserRepository;
     final DriverRepository driverRepository;
@@ -38,14 +41,14 @@ public class DriverController {
     @Autowired
     public DriverController(CommentRepository commentRepository, DriverRepository driverRepository, RequestOrderRepository requestOrderRepository,
                             OrderForUserRepository orderForUserRepository, CustomerRepository customerRepository, AreaRepository areaRepository,
-                            AreaService areaService, CustomerService customerService, DriverService driverService, OrderForUserService orderForUserService) {
+                            AreaService areaService, CustomerService customerService, DriverService driverService, OrderForUserService orderForUserService, RequestOrderForDriverRepository requestOrderForDriverRepository) {
         this.commentRepository = commentRepository;
         this.orderForUserRepository = orderForUserRepository;
         this.driverRepository = driverRepository;
         this.requestOrderRepository = requestOrderRepository;
         this.customerRepository = customerRepository;
         this.areaRepository = areaRepository;
-
+        this.requestOrderForDriverRepository = requestOrderForDriverRepository;
         this.areaService = areaService;
         this.customerService = customerService;
         this.driverService = driverService;
@@ -107,10 +110,11 @@ public class DriverController {
         driver.setDriverPoint(driver.getFinishCount() * 10 + driver.getFinishDistance());
         driver.setDriverLevel(driver.getDriverPoint() % 50);
         // 更新司机订单信息
-        for (int i = 0; i < driver.getRequestOrderList().size(); ++i) {
-            RequestOrder requestOrder = driver.getRequestOrderList().get(i);
+        for (int i = 0; i < driver.getRequestOrderForDriverList().size(); ++i) {
+            RequestOrderForDriver requestOrderForDriver = driver.getRequestOrderForDriverList().get(i);
+            RequestOrder requestOrder= requestOrderRepository.findByCustomerName(requestOrderForDriver.getCustomerName());
             if (requestOrder.getIfCheck() == 1 && !requestOrder.getDriverName().equals(driverName)) {
-                driver.getRequestOrderList().remove(requestOrder);
+                driver.getRequestOrderForDriverList().remove(requestOrderForDriver);
             }
         }
         Area area = areaService.findByDriverId(driver.getId());
@@ -133,28 +137,26 @@ public class DriverController {
     @SentinelResource
     public String handleRequestOrder(String driverName, int orderNum) {
         Driver driver = driverService.findByDriverName(driverName);
-        if (driver.getRequestOrderList() != null)//如果有订单请求
+        if (driver.getRequestOrderForDriverList() != null)//如果有订单请求
         {
-            List<RequestOrder> driverRequestOrders = driver.getRequestOrderList();
+            List<RequestOrderForDriver> driverRequestOrderForDriverList = driver.getRequestOrderForDriverList();
 //            System.out.println("---------------------------");
 //            System.out.println(driver.getRequestOrderList().get(orderNum).getCustomer().getCustomerName());
 //            System.out.println("---------------------------");
-            if (driverRequestOrders != null && driverRequestOrders.size() > orderNum) {
+            if (driverRequestOrderForDriverList != null && driverRequestOrderForDriverList.size() > orderNum) {
                 //接受orderNum号订单
-                RequestOrder requestOrder = driverRequestOrders.get(orderNum);
+                RequestOrderForDriver requestOrderForDriver = driverRequestOrderForDriverList.get(orderNum);
+                RequestOrder requestOrder = requestOrderRepository.findByCustomerName(requestOrderForDriver.getCustomerName());
                 if (requestOrder.getIfCheck() == 0 || requestOrder.getDriverName().equals(driverName)) //该订单没有被其他用户接走
                 {
                     requestOrder.setIfCheck(1);
-                    List<Driver> tempList = requestOrder.getDriver();
-                    tempList.add(driver);
-                    requestOrder.setDriver(tempList);
                     requestOrder.setDriverName(driverName);
                     requestOrderRepository.save(requestOrder);
 
-                    driver.getRequestOrderList().clear();
-                    List<RequestOrder> tempOrder = new ArrayList<RequestOrder>();
-                    tempOrder.add(requestOrder);
-                    driver.setRequestOrderList(tempOrder);
+                    driver.getRequestOrderForDriverList().clear();
+                    List<RequestOrderForDriver> tempOrder = new ArrayList<RequestOrderForDriver>();
+                    tempOrder.add(requestOrderForDriver);
+                    driver.setRequestOrderForDriverList(tempOrder);
 //                    driver.getRequestOrderList().add(requestOrder);
                     driver.setIfBusy(1);
                     driver.setDesX(requestOrder.getCurX());
@@ -174,7 +176,7 @@ public class DriverController {
                     return "接受" + orderNum + "号订单";
                 } else //已被其他司机接走
                 {
-                    driver.getRequestOrderList().remove(orderNum);
+                    driver.getRequestOrderForDriverList().remove(orderNum);
                     driverRepository.save(driver);
                     return "该订单已被接走，请选择其他订单";
                 }
@@ -191,15 +193,15 @@ public class DriverController {
     public String takeCustomer(String driverName) {
         Driver driver = driverService.findByDriverName(driverName);
         // TODO：需要删除MANYTOMANY关系 不然获取不到正确用户信息
-        RequestOrder requestOrder = driver.getRequestOrderList().get(0);
-
-        Customer customer = customerService.findByCustomerName(requestOrder.getCustomerName());
+//        RequestOrder requestOrder = driver.getRequestOrderList().get(0);
+        RequestOrderForDriver requestOrderForDriver = driver.getRequestOrderForDriverList().get(0);
+        Customer customer = customerService.findByCustomerName(requestOrderForDriver.getCustomerName());
 //        Order order = new Order();TODO
 //        OrderForDriver order= new OrderForDriver();
         OrderForUser order = new OrderForUser();
 
-        driver.setDesX(requestOrder.getDesX());
-        driver.setDesY(requestOrder.getDesY());
+        driver.setDesX(requestOrderForDriver.getDesX());
+        driver.setDesY(requestOrderForDriver.getDesY());
         order.setCustomer(customer);
         order.setDriver(driver);
 //        order.setComment(new Comment("默认五星好评",5));
@@ -210,8 +212,8 @@ public class DriverController {
         order.setServiceLevel(driver.getServiceLevel());
         order.setCurX(driver.getCurX());
         order.setCurY(driver.getCurY());
-        order.setDesX(requestOrder.getDesX());
-        order.setDesY(requestOrder.getDesY());
+        order.setDesX(requestOrderForDriver.getDesX());
+        order.setDesY(requestOrderForDriver.getDesY());
         order.setDistance(Math.abs(order.getCurX() - order.getDesX()) + Math.abs(order.getCurY() - order.getDesY()));
         order.setPrice(order.getDistance() * 3 + 13);
         order.setCurState(0);
@@ -220,6 +222,7 @@ public class DriverController {
 //        driver.setCurOrder(order);
         driver.setCurOrderId(id);
         driver.setCurCustomerName(customer.getCustomerName());
+        driver.getRequestOrderForDriverList().clear();
         //TODO:乘客已上车 请求订单生命结束 从数据库中删去
 //        requestOrderRepository.findById(requestOrder.getId());
 

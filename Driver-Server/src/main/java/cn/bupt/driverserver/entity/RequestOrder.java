@@ -3,16 +3,16 @@ package cn.bupt.driverserver.entity;
 import lombok.Data;
 
 import javax.persistence.*;
-import java.util.List;
+import java.io.Serializable;
 
 @Data
 @Entity
-public class RequestOrder {
+public class RequestOrder implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-//    private long cId;
+    //    private long cId;
     private String customerName;
     private String startTime;
     private String driverName;
@@ -27,8 +27,8 @@ public class RequestOrder {
     @OneToOne(cascade = CascadeType.ALL)
     private Customer customer;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    private List<Driver> driver;
+//    @ManyToMany(fetch = FetchType.EAGER)
+//    private List<Driver> driver;
 //    @JoinTable(name="driver_requestOrder",joinColumns = {@JoinColumn(name = "r_id")},inverseJoinColumns = {@JoinColumn(name = "d_id")})
 //    @ManyToMany(cascade = {CascadeType.REFRESH},fetch = FetchType.EAGER)
 

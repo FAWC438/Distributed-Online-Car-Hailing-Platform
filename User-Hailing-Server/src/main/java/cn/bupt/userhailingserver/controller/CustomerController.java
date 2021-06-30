@@ -6,6 +6,7 @@ import cn.bupt.userhailingserver.entity.*;
 import cn.bupt.userhailingserver.repository.*;
 import cn.bupt.userhailingserver.service.*;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import javassist.expr.NewArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -30,7 +31,7 @@ public class CustomerController {
     final RequestOrderRepository requestOrderRepository;
     final CustomerRepository customerRepository;
     final AreaRepository areaRepository;
-
+    final RequestOrderForDriverRepository requestOrderForDriverRepository;
     final AreaService areaService;
     final CustomerService customerService;
     final DriverService driverService;
@@ -41,7 +42,8 @@ public class CustomerController {
     public CustomerController(CommentRepository commentRepository, DriverRepository driverRepository, RequestOrderRepository requestOrderRepository,
                               OrderForUserRepository orderForUserRepository, CustomerRepository customerRepository, AreaRepository areaRepository,
                               AreaService areaService, CustomerService customerService, DriverService driverService, OrderForUserService orderForUserService,
-                              RequestOrderService requestOrderService) {
+                              RequestOrderService requestOrderService, RequestOrderForDriverRepository requestOrderForDriverRepository) {
+        this.requestOrderForDriverRepository = requestOrderForDriverRepository;
         this.commentRepository = commentRepository;
         this.orderForUserRepository = orderForUserRepository;
         this.driverRepository = driverRepository;
@@ -144,35 +146,13 @@ public class CustomerController {
         //找司机
         requestOrder.setCurX(customer.getCurX());
         requestOrder.setCurY(customer.getCurY());
+        requestOrder.setStartTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
         requestOrder.setDesX(desX);
         requestOrder.setDesY(desY);
         requestOrder.setIfCheck(0);
         requestOrder.setPriority(requestOrder.getPriority() + 1);
+
         int freeCnt = 0;
-//        for (Integer integer : sectorList) {
-//            List<Area> areaList = areaRepository.findBySectorId(integer);
-//            for (Area area : areaList) {
-//                Driver driver = driverRepository.findById(area.getDriverId()).orElse(null);
-//                if (driver != null) {
-//                    if (driver.getIfBusy() == 0) {
-//                        freeCnt += 1;
-//                    }
-//                    if (driver.getRequestOrderList() == null) {
-//                        List<RequestOrder> tempOrder = new ArrayList<>();
-//                        tempOrder.add(requestOrder);
-//                        driver.setRequestOrderList(tempOrder);
-//                    } else {
-//                        driver.getRequestOrderList().add(requestOrder);
-//                    }
-////                    System.out.println("-----------------");
-////                    System.out.println(driver);
-////                    System.out.println("-----------------");
-//                    driverRepository.save(driver);
-//                    if (freeCnt >= 5) break;
-//                }
-//            }
-//            if (freeCnt >= 5) break;
-//        }
         for (Integer integer : sectorList) {
             List<Area> areaList = areaService.findBySectorId(integer);
             for (Area area : areaList) {
@@ -181,27 +161,45 @@ public class CustomerController {
                     if (driver.getIfBusy() == 0) {
                         freeCnt += 1;
                     }
-                    if (driver.getRequestOrderList() == null) {
-                        List<RequestOrder> tempOrder = new ArrayList<>();
-                        tempOrder.add(requestOrder);
-                        driver.setRequestOrderList(tempOrder);
+                    RequestOrderForDriver requestOrderForDriver = new RequestOrderForDriver();
+                    List<RequestOrderForDriver> tempOrder = new ArrayList<>();
+                    requestOrderForDriver.setCustomerName(customerName);
+                    requestOrderForDriver.setDriverName(driver.getDriverName());
+                    requestOrderForDriver.setStartTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
+                    requestOrderForDriver.setCurX(customer.getCurX());
+                    requestOrderForDriver.setCurY(customer.getCurY());
+                    requestOrderForDriver.setDesX(desX);
+                    requestOrderForDriver.setDesY(desY);
+                    requestOrderForDriver.setIfCheck(0);
+                    if (driver.getRequestOrderForDriverList() == null) {
+//                        List<RequestOrder> tempOrder = new ArrayList<>();
+//                        tempOrder.add(requestOrder);
+//                        driver.setRequestOrderForDriverList(tempOrder);
+                        tempOrder.add(requestOrderForDriver);
+                        requestOrderForDriver.setDriver(driver);
+                        requestOrderForDriverRepository.save(requestOrderForDriver);
+                        driver.setRequestOrderForDriverList(tempOrder);
                     } else {
-                        List<RequestOrder> requestOrderList = driver.getRequestOrderList();
+                        List<RequestOrderForDriver> requestOrderForDriverList = driver.getRequestOrderForDriverList();
                         int flag = 0;
-                        for (RequestOrder order : requestOrderList) {
+                        for (RequestOrderForDriver order : requestOrderForDriverList) {
                             if (order.getCustomerName().equals(customerName)) {
                                 flag = 1;
                                 break;
                             }
                         }
                         if (flag == 0) {
-                            driver.getRequestOrderList().add(requestOrder);
+                            requestOrderForDriver.setDriver(driver);
+                            requestOrderForDriverRepository.save(requestOrderForDriver);
+                            driver.getRequestOrderForDriverList().add(requestOrderForDriver);
                         }
                     }
 //                    System.out.println("-----------------");
 //                    System.out.println(driver);
 //                    System.out.println("-----------------");
+                    requestOrderForDriverRepository.save(requestOrderForDriver);
                     driverRepository.save(driver);
+//                    requestOrderForDriverRepository.save(requestOrderForDriver);
                     if (freeCnt >= 5) break;
                 }
             }
@@ -211,16 +209,54 @@ public class CustomerController {
 
         if (requestOrder.getPriority() >= 100) {
             List<Driver> driverList = (List<Driver>) driverRepository.findAll();
-            for (Driver tempDriver : driverList) {
-                if (tempDriver.getIfBusy() == 0) {
-                    tempDriver.getRequestOrderList().add(requestOrder);
-                    driverRepository.save(tempDriver);
+            for (Driver driver : driverList) {
+                if (driver.getIfBusy() == 0) {
+////                    tempDriver.getRequestOrderList().add(requestOrder);
+//                    tempDriver.getRequestOrderForDriverList().
+//                    driverRepository.save(tempDriver);
+                    RequestOrderForDriver requestOrderForDriver = new RequestOrderForDriver();
+                    List<RequestOrderForDriver> tempOrder = new ArrayList<>();
+                    requestOrderForDriver.setCustomerName(customerName);
+                    requestOrderForDriver.setDriverName(driver.getDriverName());
+                    requestOrderForDriver.setStartTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
+                    requestOrderForDriver.setCurX(customer.getCurX());
+                    requestOrderForDriver.setCurY(customer.getCurY());
+                    requestOrderForDriver.setDesX(desX);
+                    requestOrderForDriver.setDesY(desY);
+                    requestOrderForDriver.setIfCheck(0);
+                    if (driver.getRequestOrderForDriverList() == null) {
+//                        List<RequestOrder> tempOrder = new ArrayList<>();
+//                        tempOrder.add(requestOrder);
+//                        driver.setRequestOrderForDriverList(tempOrder);
+                        tempOrder.add(requestOrderForDriver);
+                        requestOrderForDriver.setDriver(driver);
+                        requestOrderForDriverRepository.save(requestOrderForDriver);
+                        driver.setRequestOrderForDriverList(tempOrder);
+                    } else {
+                        List<RequestOrderForDriver> requestOrderForDriverList = driver.getRequestOrderForDriverList();
+                        int flag = 0;
+                        for (RequestOrderForDriver order : requestOrderForDriverList) {
+                            if (order.getCustomerName().equals(customerName)) {
+                                flag = 1;
+                                break;
+                            }
+                        }
+                        if (flag == 0) {
+                            requestOrderForDriver.setDriver(driver);
+                            requestOrderForDriverRepository.save(requestOrderForDriver);
+                            driver.getRequestOrderForDriverList().add(requestOrderForDriver);
+                        }
+//                    System.out.println("-----------------");
+//                    System.out.println(driver);
+//                    System.out.println("-----------------");
+                        driverRepository.save(driver);
+                    }
                 }
+                requestOrder.setPriority(0);
             }
-            requestOrder.setPriority(0);
-        }
-        requestOrderRepository.save(requestOrder);
 
+            requestOrderRepository.save(requestOrder);
+        }
         return "正在为您寻找司机，请耐心等候!!!!!";
     }
 
