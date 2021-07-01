@@ -208,7 +208,12 @@ public class DriverController {
             }
             // TODO：需要删除MANYTOMANY关系 不然获取不到正确用户信息
 //        RequestOrder requestOrder = driver.getRequestOrderList().get(0);
-            RequestOrderForDriver requestOrderForDriver = driver.getRequestOrderForDriverList().get(0);
+            List<RequestOrderForDriver> requestOrderForDriverList = driver.getRequestOrderForDriverList();
+            if(requestOrderForDriverList == null)
+            {
+                return "无订单列表";
+            }
+            RequestOrderForDriver requestOrderForDriver = requestOrderForDriverList.get(0);
             if(requestOrderForDriver == null)
             {
                 return "无订单，无法接单";
@@ -247,7 +252,7 @@ public class DriverController {
             driver.getRequestOrderForDriverList().clear();
             //TODO:乘客已上车 请求订单生命结束 从数据库中删去
 //        requestOrderRepository.findById(requestOrder.getId());
-
+            orderForUserRepository.save(order);
             driverRepository.save(driver);
 
 

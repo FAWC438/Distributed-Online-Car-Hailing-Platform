@@ -290,6 +290,7 @@ public class CustomerController {
                     if (requestOrder == null) return "订单已取消";
 //                requestOrderRepository.deleteById(requestOrder.getId());
                     requestOrder.setIfCheck(1);
+                    requestOrder.setDriverName("");
                     requestOrder.setPriority(0);
 //                requestOrder.setDriverName();
                     requestOrderRepository.save(requestOrder);
@@ -349,13 +350,19 @@ public class CustomerController {
                             comment.setContent(content);
                             comment.setCommentLevel(commentLevel);
                         }
+                        comment.setDriver(driver);
                         driver.setStars((commentLevel + driver.getStars() * driver.getFinishCount()) / driver.getFinishCount());
+                        driver.setCurCustomerName("");
 //        orderForCustomerRepository.save(order);//TODO
 //        OrderForDriver tempOrder = orderForDriverRepository.findById(order.getOrderForDriver().getId()).orElse(null);
 //        orderForDriverRepository.save(tempOrder);//TODO
                         orderForUserRepository.save(order);
-                        commentRepository.save(comment);
+//                        commentRepository.save(comment);
                         driverRepository.save(driver);
+
+                        RequestOrder requestOrder = requestOrderRepository.findByCustomerName(customerName);
+                        requestOrder.setDriverName("");
+                        requestOrderRepository.save(requestOrder);
                         return "祝您生活愉快";
                     }
                 }
@@ -374,6 +381,10 @@ public class CustomerController {
     public String searchDriver(String driverName) {
         try {
             Driver driver = driverService.findByDriverName(driverName);
+            if(driver == null)
+            {
+                return "司机不存在";
+            }
             StringBuilder retStr = new StringBuilder("Driver:" + driver.getDriverName() + "\n");
             retStr.append("Service Level:").append(driver.getServiceLevel()).append("\n");
             retStr.append("Driver Level:").append(driver.getDriverLevel()).append("\n");
