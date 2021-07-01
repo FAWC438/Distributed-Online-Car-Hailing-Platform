@@ -18,7 +18,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 
 //@RequestMapping("/user/driver")
@@ -86,7 +85,6 @@ public class DriverController {
             if (difX == 0) {
                 if (difY == 0) {
                     //已到达 更新各种信息 busy free 订单状况 消息推送 等
-
                 } else// difx = 0 dify != 0 y方向走
                 {
                     curY += (driver.getDesY() - curY) / difY;
@@ -204,10 +202,22 @@ public class DriverController {
     public String takeCustomer(String driverName) {
         try {
             Driver driver = driverService.findByDriverName(driverName);
+            if(driver == null)
+            {
+                return "无该司机";
+            }
             // TODO：需要删除MANYTOMANY关系 不然获取不到正确用户信息
 //        RequestOrder requestOrder = driver.getRequestOrderList().get(0);
             RequestOrderForDriver requestOrderForDriver = driver.getRequestOrderForDriverList().get(0);
+            if(requestOrderForDriver == null)
+            {
+                return "无订单，无法接单";
+            }
             Customer customer = customerService.findByCustomerName(requestOrderForDriver.getCustomerName());
+            if(customer == null)
+            {
+                return "该用户不存在，订单取消";
+            }
 //        Order order = new Order();TODO
 //        OrderForDriver order= new OrderForDriver();
             OrderForUser order = new OrderForUser();

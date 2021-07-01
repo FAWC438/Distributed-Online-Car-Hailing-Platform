@@ -82,8 +82,7 @@ public class DriverController {
     @SentinelResource
     public String logout(String driverName) {// TODO：更改代码
         Driver driver = driverRepository.findByDriverName(driverName);
-        if(driver == null)
-        {
+        if (driver == null) {
             return "该用户不存在";
         }
         driver.setIfLogin(0);
@@ -134,7 +133,9 @@ public class DriverController {
     @SentinelResource
     public String edit(String driverName, int serviceLevel) {//TODO 更新代码
         Driver driver = driverRepository.findByDriverName(driverName);
-        if(driver == null) return "该司机不存在";
+        if (driver == null) {
+            return "该司机不存在";
+        }
         driver.setServiceLevel(serviceLevel);
         driverRepository.save(driver);
         return "编辑成功";

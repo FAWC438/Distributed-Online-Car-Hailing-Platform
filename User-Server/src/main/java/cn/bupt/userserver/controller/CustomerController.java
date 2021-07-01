@@ -95,6 +95,10 @@ public class CustomerController {
     @SentinelResource
     public String logout(String customerName) {
         Customer customer = customerRepository.findByCustomerName(customerName);
+        if(customer == null)
+        {
+            return "该用户不存在";
+        }
         customer.setIfLogin(0);
         customerRepository.save(customer);
         System.out.println("用户" + customerName + "已登出");
@@ -107,8 +111,13 @@ public class CustomerController {
     @SentinelResource
     public String register(String customerName, String password, String email) {
         Customer customer = new Customer();
+        if(customerName == "" || customerName == null)
+        {
+            return "注册失败，检查用户名 密码是否合规";
+        }
         if (customerRepository.findByCustomerName(customerName) == null) {
             customer.setCustomerName(customerName);
+            customerRepository.save(customer);
             customer.setPassword(password);
             customer.setEmail(email);
             customer.setTakeCount(0);
@@ -152,6 +161,10 @@ public class CustomerController {
     @SentinelResource
     public String indexView(String username) {
         Customer customer = customerRepository.findByCustomerName(username);
+        if(customer == null)
+        {
+            return "无该用户";
+        }
         System.out.println(customer);
         return String.valueOf(customer);
     }

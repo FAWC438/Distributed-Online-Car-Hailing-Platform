@@ -6,7 +6,6 @@ import cn.bupt.userhailingserver.entity.*;
 import cn.bupt.userhailingserver.repository.*;
 import cn.bupt.userhailingserver.service.*;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
-import javassist.expr.NewArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -149,6 +147,9 @@ public class CustomerController {
             }
 
             RequestOrder requestOrder = requestOrderService.findByCustomerName(customerName);
+            if (requestOrder == null) {
+                return "该用户订单生成失败";
+            }
             //找司机
             requestOrder.setCurX(customer.getCurX());
             requestOrder.setCurY(customer.getCurY());
@@ -282,7 +283,7 @@ public class CustomerController {
 //        if (CustomerService.CustomerHailing(username, requestOrder))
             if (requestOrderService.findByCustomerName(customerName) != null) {
                 //取消该订单
-                if (requestOrderService.findByCustomerName(customerName).getIfCheck() == 1) {
+                if (requestOrderRepository.findByCustomerName(customerName) != null && requestOrderService.findByCustomerName(customerName).getIfCheck() == 1) {
                     return "司机马上赶来，请等待";
                 } else {
                     RequestOrder requestOrder = requestOrderService.findByCustomerName(customerName);
@@ -392,9 +393,15 @@ public class CustomerController {
     @SentinelResource
     public String searchOrder(String customerName) {
         try {
-
             Customer customer = customerService.findByCustomerName(customerName);
+            if (customer == null) {
+                return "用户不存在";
+            }
             List<OrderForUser> orderList = orderForUserService.findByCustomerName(customerName);
+            if(orderList == null)
+            {
+                return "无订单";
+            }
             StringBuilder retStr = new StringBuilder();
             for (OrderForUser orderForUser : orderList) {
                 retStr.append("Order0:").append(orderForUser.toString()).append("\n");
