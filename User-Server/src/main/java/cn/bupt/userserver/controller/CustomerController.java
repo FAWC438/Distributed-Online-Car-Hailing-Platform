@@ -158,8 +158,12 @@ public class CustomerController {
 
     @RequestMapping("/updateCustomer")
     @SentinelResource
-    public String updateCustomer(String customerName, int curX, int curY) {
+    public String updateCustomer(String customerName, int curX, int curY) {//TODO 更改了代码
         Customer customer = customerRepository.findByCustomerName(customerName);
+        if(customer == null)
+        {
+            return "无该用户";
+        }
         //获取当前位置
         customer.setCurX(curX);
         customer.setCurY(curY);

@@ -80,8 +80,12 @@ public class DriverController {
 
     @RequestMapping("/logout")
     @SentinelResource
-    public String logout(String driverName) {
+    public String logout(String driverName) {// TODO：更改代码
         Driver driver = driverRepository.findByDriverName(driverName);
+        if(driver == null)
+        {
+            return "该用户不存在";
+        }
         driver.setIfLogin(0);
         System.out.println("司机" + driverName + "已登出");
         return "登出成功";
@@ -89,10 +93,11 @@ public class DriverController {
 
     @RequestMapping("/register")
     @SentinelResource
-    public String register(String driverName, int curX, int curY) {
+    public String register(String driverName, String password) {    //TODO:改了接口参数
         if (driverRepository.findByDriverName(driverName) == null) {
             Driver driver = new Driver();
             driver.setDriverName(driverName);
+            driver.setPassword(password);
             driver.setFinishCount(0);
             driver.setFinishDistance(0);
 //        driver.setServiceLevel(1);
@@ -102,8 +107,8 @@ public class DriverController {
             driver.setIfLogin(0);
             driver.setStars(0);
             driver.setIfBusy(0);
-            driver.setCurX(curX);
-            driver.setCurY(curY);
+            driver.setCurX(25);
+            driver.setCurY(25);
             driver.setDesX(driver.getCurX());
             driver.setDesY(driver.getCurY());
 
@@ -127,8 +132,9 @@ public class DriverController {
 
     @RequestMapping("/edit")
     @SentinelResource
-    public String edit(String driverName, int serviceLevel) {
+    public String edit(String driverName, int serviceLevel) {//TODO 更新代码
         Driver driver = driverRepository.findByDriverName(driverName);
+        if(driver == null) return "该司机不存在";
         driver.setServiceLevel(serviceLevel);
         driverRepository.save(driver);
         return "编辑成功";
